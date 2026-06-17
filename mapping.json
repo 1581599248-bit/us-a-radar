@@ -1,22 +1,82 @@
 {
+  "version": "4.0",
+  "updatedAt": "2026-06-18",
   "sectors": [
     {
       "id": "optical-module",
       "name": "光模块",
       "nameEn": "Optical Modules",
       "usLeaders": [
-        {"ticker": "LITE", "name": "Lumentum", "weight": 1.0},
-        {"ticker": "COHR", "name": "Coherent", "weight": 1.0},
-        {"ticker": "MRVL", "name": "Marvell", "weight": 0.8},
-        {"ticker": "AVGO", "name": "Broadcom", "weight": 0.6}
+        {
+          "ticker": "LITE",
+          "name": "Lumentum / 朗美通",
+          "weight": 1.0
+        },
+        {
+          "ticker": "COHR",
+          "name": "Coherent / 相干公司",
+          "weight": 1.0
+        },
+        {
+          "ticker": "MRVL",
+          "name": "Marvell / 迈威尔",
+          "weight": 0.8
+        },
+        {
+          "ticker": "AVGO",
+          "name": "Broadcom / 博通",
+          "weight": 0.6
+        }
       ],
       "aTargets": [
-        {"code": "300308", "market": "SZ", "name": "中际旭创", "weight": 1.0},
-        {"code": "300502", "market": "SZ", "name": "新易盛", "weight": 1.0},
-        {"code": "300394", "market": "SZ", "name": "天孚通信", "weight": 0.8},
-        {"code": "002281", "market": "SZ", "name": "光迅科技", "weight": 0.6},
-        {"code": "300548", "market": "SZ", "name": "博创科技", "weight": 0.5},
-        {"code": "603083", "market": "SH", "name": "剑桥科技", "weight": 0.5}
+        {
+          "code": "300308",
+          "market": "SZ",
+          "name": "中际旭创",
+          "weight": 1.0
+        },
+        {
+          "code": "300502",
+          "market": "SZ",
+          "name": "新易盛",
+          "weight": 1.0
+        },
+        {
+          "code": "300394",
+          "market": "SZ",
+          "name": "天孚通信",
+          "weight": 0.8
+        },
+        {
+          "code": "002281",
+          "market": "SZ",
+          "name": "光迅科技",
+          "weight": 0.7
+        },
+        {
+          "code": "300548",
+          "market": "SZ",
+          "name": "博创科技",
+          "weight": 0.6
+        },
+        {
+          "code": "603083",
+          "market": "SH",
+          "name": "剑桥科技",
+          "weight": 0.5
+        },
+        {
+          "code": "300570",
+          "market": "SZ",
+          "name": "太辰光",
+          "weight": 0.5
+        },
+        {
+          "code": "002902",
+          "market": "SZ",
+          "name": "铭普光磁",
+          "weight": 0.4
+        }
       ]
     },
     {
@@ -24,17 +84,76 @@
       "name": "GPU/算力芯片",
       "nameEn": "GPU / AI Chips",
       "usLeaders": [
-        {"ticker": "NVDA", "name": "NVIDIA", "weight": 1.0},
-        {"ticker": "AMD", "name": "AMD", "weight": 1.0},
-        {"ticker": "INTC", "name": "Intel", "weight": 0.6},
-        {"ticker": "ARM", "name": "ARM Holdings", "weight": 0.5}
+        {
+          "ticker": "NVDA",
+          "name": "NVIDIA / 英伟达",
+          "weight": 1.0
+        },
+        {
+          "ticker": "AMD",
+          "name": "AMD / 超威半导体",
+          "weight": 1.0
+        },
+        {
+          "ticker": "INTC",
+          "name": "Intel / 英特尔",
+          "weight": 0.6
+        },
+        {
+          "ticker": "ARM",
+          "name": "ARM Holdings / 安谋",
+          "weight": 0.5
+        }
       ],
       "aTargets": [
-        {"code": "300474", "market": "SZ", "name": "景嘉微", "weight": 1.0},
-        {"code": "688041", "market": "SH", "name": "海光信息", "weight": 1.0},
-        {"code": "688256", "market": "SH", "name": "寒武纪", "weight": 0.9},
-        {"code": "688047", "market": "SH", "name": "龙芯中科", "weight": 0.6},
-        {"code": "000066", "market": "SZ", "name": "中国长城", "weight": 0.5}
+        {
+          "code": "300474",
+          "market": "SZ",
+          "name": "景嘉微",
+          "weight": 1.0
+        },
+        {
+          "code": "688041",
+          "market": "SH",
+          "name": "海光信息",
+          "weight": 1.0
+        },
+        {
+          "code": "688256",
+          "market": "SH",
+          "name": "寒武纪",
+          "weight": 0.9
+        },
+        {
+          "code": "688047",
+          "market": "SH",
+          "name": "龙芯中科",
+          "weight": 0.7
+        },
+        {
+          "code": "000066",
+          "market": "SZ",
+          "name": "中国长城",
+          "weight": 0.6
+        },
+        {
+          "code": "688525",
+          "market": "SH",
+          "name": "佰维存储",
+          "weight": 0.5
+        },
+        {
+          "code": "300223",
+          "market": "SZ",
+          "name": "北京君正",
+          "weight": 0.5
+        },
+        {
+          "code": "688385",
+          "market": "SH",
+          "name": "复旦微电",
+          "weight": 0.4
+        }
       ]
     },
     {
@@ -42,17 +161,76 @@
       "name": "半导体设备",
       "nameEn": "Semiconductor Equipment",
       "usLeaders": [
-        {"ticker": "AMAT", "name": "Applied Materials", "weight": 1.0},
-        {"ticker": "LRCX", "name": "Lam Research", "weight": 1.0},
-        {"ticker": "KLAC", "name": "KLA", "weight": 1.0},
-        {"ticker": "ASML", "name": "ASML", "weight": 1.0}
+        {
+          "ticker": "AMAT",
+          "name": "Applied Materials / 应用材料",
+          "weight": 1.0
+        },
+        {
+          "ticker": "LRCX",
+          "name": "Lam Research / 拉姆研究",
+          "weight": 1.0
+        },
+        {
+          "ticker": "KLAC",
+          "name": "KLA / 科磊",
+          "weight": 1.0
+        },
+        {
+          "ticker": "ASML",
+          "name": "ASML / 阿斯麦",
+          "weight": 1.0
+        }
       ],
       "aTargets": [
-        {"code": "002371", "market": "SZ", "name": "北方华创", "weight": 1.0},
-        {"code": "688012", "market": "SH", "name": "中微公司", "weight": 1.0},
-        {"code": "688120", "market": "SH", "name": "华海清科", "weight": 0.8},
-        {"code": "688072", "market": "SH", "name": "拓荆科技", "weight": 0.7},
-        {"code": "688082", "market": "SH", "name": "盛美上海", "weight": 0.6}
+        {
+          "code": "002371",
+          "market": "SZ",
+          "name": "北方华创",
+          "weight": 1.0
+        },
+        {
+          "code": "688012",
+          "market": "SH",
+          "name": "中微公司",
+          "weight": 1.0
+        },
+        {
+          "code": "688120",
+          "market": "SH",
+          "name": "华海清科",
+          "weight": 0.8
+        },
+        {
+          "code": "688072",
+          "market": "SH",
+          "name": "拓荆科技",
+          "weight": 0.7
+        },
+        {
+          "code": "688082",
+          "market": "SH",
+          "name": "盛美上海",
+          "weight": 0.6
+        },
+        {
+          "code": "688361",
+          "market": "SH",
+          "name": "中科飞测",
+          "weight": 0.5
+        },
+        {
+          "code": "688409",
+          "market": "SH",
+          "name": "富创精密",
+          "weight": 0.5
+        },
+        {
+          "code": "603690",
+          "market": "SH",
+          "name": "至纯科技",
+          "weight": 0.4
+        }
       ]
     },
     {
@@ -60,17 +238,76 @@
       "name": "半导体材料/IC设计",
       "nameEn": "Semiconductor Materials / IC Design",
       "usLeaders": [
-        {"ticker": "AVGO", "name": "Broadcom", "weight": 1.0},
-        {"ticker": "QCOM", "name": "Qualcomm", "weight": 1.0},
-        {"ticker": "MU", "name": "Micron", "weight": 1.0},
-        {"ticker": "TSM", "name": "TSMC", "weight": 1.0}
+        {
+          "ticker": "AVGO",
+          "name": "Broadcom / 博通",
+          "weight": 1.0
+        },
+        {
+          "ticker": "QCOM",
+          "name": "Qualcomm / 高通",
+          "weight": 1.0
+        },
+        {
+          "ticker": "MU",
+          "name": "Micron / 美光",
+          "weight": 1.0
+        },
+        {
+          "ticker": "TSM",
+          "name": "TSMC / 台积电",
+          "weight": 1.0
+        }
       ],
       "aTargets": [
-        {"code": "688981", "market": "SH", "name": "中芯国际", "weight": 1.0},
-        {"code": "603501", "market": "SH", "name": "韦尔股份", "weight": 1.0},
-        {"code": "603986", "market": "SH", "name": "兆易创新", "weight": 1.0},
-        {"code": "688008", "market": "SH", "name": "澜起科技", "weight": 0.8},
-        {"code": "688126", "market": "SH", "name": "沪硅产业", "weight": 0.6}
+        {
+          "code": "688981",
+          "market": "SH",
+          "name": "中芯国际",
+          "weight": 1.0
+        },
+        {
+          "code": "603501",
+          "market": "SH",
+          "name": "韦尔股份",
+          "weight": 1.0
+        },
+        {
+          "code": "603986",
+          "market": "SH",
+          "name": "兆易创新",
+          "weight": 1.0
+        },
+        {
+          "code": "688008",
+          "market": "SH",
+          "name": "澜起科技",
+          "weight": 0.8
+        },
+        {
+          "code": "688126",
+          "market": "SH",
+          "name": "沪硅产业",
+          "weight": 0.6
+        },
+        {
+          "code": "300782",
+          "market": "SZ",
+          "name": "卓胜微",
+          "weight": 0.7
+        },
+        {
+          "code": "688595",
+          "market": "SH",
+          "name": "芯海科技",
+          "weight": 0.4
+        },
+        {
+          "code": "688396",
+          "market": "SH",
+          "name": "华润微",
+          "weight": 0.6
+        }
       ]
     },
     {
@@ -78,15 +315,66 @@
       "name": "PCB",
       "nameEn": "PCB",
       "usLeaders": [
-        {"ticker": "TTMI", "name": "TTM Technologies", "weight": 1.0},
-        {"ticker": "JBL", "name": "Jabil", "weight": 0.8}
+        {
+          "ticker": "TTMI",
+          "name": "TTM Technologies / 迅达科技",
+          "weight": 1.0
+        },
+        {
+          "ticker": "JBL",
+          "name": "Jabil / 捷普",
+          "weight": 0.8
+        }
       ],
       "aTargets": [
-        {"code": "002463", "market": "SZ", "name": "沪电股份", "weight": 1.0},
-        {"code": "002916", "market": "SZ", "name": "深南电路", "weight": 1.0},
-        {"code": "600183", "market": "SH", "name": "生益科技", "weight": 0.8},
-        {"code": "002938", "market": "SZ", "name": "鹏鼎控股", "weight": 0.7},
-        {"code": "603228", "market": "SH", "name": "景旺电子", "weight": 0.6}
+        {
+          "code": "002463",
+          "market": "SZ",
+          "name": "沪电股份",
+          "weight": 1.0
+        },
+        {
+          "code": "002916",
+          "market": "SZ",
+          "name": "深南电路",
+          "weight": 1.0
+        },
+        {
+          "code": "600183",
+          "market": "SH",
+          "name": "生益科技",
+          "weight": 0.8
+        },
+        {
+          "code": "002938",
+          "market": "SZ",
+          "name": "鹏鼎控股",
+          "weight": 0.7
+        },
+        {
+          "code": "603228",
+          "market": "SH",
+          "name": "景旺电子",
+          "weight": 0.6
+        },
+        {
+          "code": "002815",
+          "market": "SZ",
+          "name": "崇达技术",
+          "weight": 0.5
+        },
+        {
+          "code": "300739",
+          "market": "SZ",
+          "name": "明阳电路",
+          "weight": 0.4
+        },
+        {
+          "code": "603386",
+          "market": "SH",
+          "name": "骏亚科技",
+          "weight": 0.4
+        }
       ]
     },
     {
@@ -94,14 +382,54 @@
       "name": "液冷",
       "nameEn": "Liquid Cooling",
       "usLeaders": [
-        {"ticker": "VRT", "name": "Vertiv", "weight": 1.0},
-        {"ticker": "DELL", "name": "Dell", "weight": 0.7}
+        {
+          "ticker": "VRT",
+          "name": "Vertiv / 维谛技术",
+          "weight": 1.0
+        },
+        {
+          "ticker": "DELL",
+          "name": "Dell / 戴尔",
+          "weight": 0.7
+        }
       ],
       "aTargets": [
-        {"code": "002837", "market": "SZ", "name": "英维克", "weight": 1.0},
-        {"code": "300499", "market": "SZ", "name": "高澜股份", "weight": 0.8},
-        {"code": "301018", "market": "SZ", "name": "申菱环境", "weight": 0.6},
-        {"code": "300990", "market": "SZ", "name": "同飞股份", "weight": 0.5}
+        {
+          "code": "002837",
+          "market": "SZ",
+          "name": "英维克",
+          "weight": 1.0
+        },
+        {
+          "code": "300499",
+          "market": "SZ",
+          "name": "高澜股份",
+          "weight": 0.8
+        },
+        {
+          "code": "301018",
+          "market": "SZ",
+          "name": "申菱环境",
+          "weight": 0.6
+        },
+        {
+          "code": "300990",
+          "market": "SZ",
+          "name": "同飞股份",
+          "weight": 0.5
+        },
+        {
+          "code": "002886",
+          "market": "SZ",
+          "name": "沃特股份",
+          "weight": 0.4
+        },
+        {
+          "code": "301286",
+          "market": "SZ",
+          "name": "同星科技",
+          "weight": 0.4
+        }
       ]
     },
     {
@@ -109,15 +437,71 @@
       "name": "CPO",
       "nameEn": "CPO (Co-Packaged Optics)",
       "usLeaders": [
-        {"ticker": "AVGO", "name": "Broadcom", "weight": 1.0},
-        {"ticker": "MRVL", "name": "Marvell", "weight": 1.0},
-        {"ticker": "NVDA", "name": "NVIDIA", "weight": 0.8}
+        {
+          "ticker": "AVGO",
+          "name": "Broadcom / 博通",
+          "weight": 1.0
+        },
+        {
+          "ticker": "MRVL",
+          "name": "Marvell / 迈威尔",
+          "weight": 1.0
+        },
+        {
+          "ticker": "NVDA",
+          "name": "NVIDIA / 英伟达",
+          "weight": 0.8
+        }
       ],
       "aTargets": [
-        {"code": "300308", "market": "SZ", "name": "中际旭创", "weight": 1.0},
-        {"code": "300502", "market": "SZ", "name": "新易盛", "weight": 1.0},
-        {"code": "300394", "market": "SZ", "name": "天孚通信", "weight": 0.8},
-        {"code": "301165", "market": "SZ", "name": "锐捷网络", "weight": 0.5}
+        {
+          "code": "300308",
+          "market": "SZ",
+          "name": "中际旭创",
+          "weight": 1.0
+        },
+        {
+          "code": "300502",
+          "market": "SZ",
+          "name": "新易盛",
+          "weight": 1.0
+        },
+        {
+          "code": "300394",
+          "market": "SZ",
+          "name": "天孚通信",
+          "weight": 0.8
+        },
+        {
+          "code": "301165",
+          "market": "SZ",
+          "name": "锐捷网络",
+          "weight": 0.5
+        },
+        {
+          "code": "002281",
+          "market": "SZ",
+          "name": "光迅科技",
+          "weight": 0.7
+        },
+        {
+          "code": "300570",
+          "market": "SZ",
+          "name": "太辰光",
+          "weight": 0.5
+        },
+        {
+          "code": "300548",
+          "market": "SZ",
+          "name": "博创科技",
+          "weight": 0.6
+        },
+        {
+          "code": "002902",
+          "market": "SZ",
+          "name": "铭普光磁",
+          "weight": 0.4
+        }
       ]
     },
     {
@@ -125,15 +509,76 @@
       "name": "服务器/数据中心",
       "nameEn": "Servers / Data Center",
       "usLeaders": [
-        {"ticker": "DELL", "name": "Dell", "weight": 1.0},
-        {"ticker": "HPE", "name": "HPE", "weight": 0.8},
-        {"ticker": "SMCI", "name": "Super Micro", "weight": 1.0},
-        {"ticker": "ANET", "name": "Arista Networks", "weight": 0.8}
+        {
+          "ticker": "DELL",
+          "name": "Dell / 戴尔",
+          "weight": 1.0
+        },
+        {
+          "ticker": "HPE",
+          "name": "HPE / 慧与",
+          "weight": 0.8
+        },
+        {
+          "ticker": "SMCI",
+          "name": "Super Micro / 超微电脑",
+          "weight": 1.0
+        },
+        {
+          "ticker": "ANET",
+          "name": "Arista Networks /  Arista",
+          "weight": 0.8
+        }
       ],
       "aTargets": [
-        {"code": "000977", "market": "SZ", "name": "浪潮信息", "weight": 1.0},
-        {"code": "603019", "market": "SH", "name": "中科曙光", "weight": 1.0},
-        {"code": "601138", "market": "SH", "name": "工业富联", "weight": 0.9}
+        {
+          "code": "000977",
+          "market": "SZ",
+          "name": "浪潮信息",
+          "weight": 1.0
+        },
+        {
+          "code": "603019",
+          "market": "SH",
+          "name": "中科曙光",
+          "weight": 1.0
+        },
+        {
+          "code": "601138",
+          "market": "SH",
+          "name": "工业富联",
+          "weight": 0.9
+        },
+        {
+          "code": "600498",
+          "market": "SH",
+          "name": "烽火通信",
+          "weight": 0.6
+        },
+        {
+          "code": "000938",
+          "market": "SZ",
+          "name": "紫光股份",
+          "weight": 0.5
+        },
+        {
+          "code": "600728",
+          "market": "SH",
+          "name": "佳都科技",
+          "weight": 0.4
+        },
+        {
+          "code": "300212",
+          "market": "SZ",
+          "name": "易华录",
+          "weight": 0.4
+        },
+        {
+          "code": "600845",
+          "market": "SH",
+          "name": "宝信软件",
+          "weight": 0.5
+        }
       ]
     },
     {
@@ -141,15 +586,66 @@
       "name": "机器人/人形机器人",
       "nameEn": "Robotics / Humanoid",
       "usLeaders": [
-        {"ticker": "TSLA", "name": "Tesla", "weight": 1.0},
-        {"ticker": "ISRG", "name": "Intuitive Surgical", "weight": 0.7}
+        {
+          "ticker": "TSLA",
+          "name": "Tesla / 特斯拉",
+          "weight": 1.0
+        },
+        {
+          "ticker": "ISRG",
+          "name": "Intuitive Surgical / 直觉外科",
+          "weight": 0.7
+        }
       ],
       "aTargets": [
-        {"code": "688017", "market": "SH", "name": "绿的谐波", "weight": 1.0},
-        {"code": "603728", "market": "SH", "name": "鸣志电器", "weight": 1.0},
-        {"code": "300124", "market": "SZ", "name": "汇川技术", "weight": 0.9},
-        {"code": "002050", "market": "SZ", "name": "三花智控", "weight": 0.8},
-        {"code": "601689", "market": "SH", "name": "拓普集团", "weight": 0.8}
+        {
+          "code": "688017",
+          "market": "SH",
+          "name": "绿的谐波",
+          "weight": 1.0
+        },
+        {
+          "code": "603728",
+          "market": "SH",
+          "name": "鸣志电器",
+          "weight": 1.0
+        },
+        {
+          "code": "300124",
+          "market": "SZ",
+          "name": "汇川技术",
+          "weight": 0.9
+        },
+        {
+          "code": "002050",
+          "market": "SZ",
+          "name": "三花智控",
+          "weight": 0.8
+        },
+        {
+          "code": "601689",
+          "market": "SH",
+          "name": "拓普集团",
+          "weight": 0.8
+        },
+        {
+          "code": "603915",
+          "market": "SH",
+          "name": "国茂股份",
+          "weight": 0.5
+        },
+        {
+          "code": "002896",
+          "market": "SZ",
+          "name": "中大力德",
+          "weight": 0.5
+        },
+        {
+          "code": "002527",
+          "market": "SZ",
+          "name": "新时达",
+          "weight": 0.4
+        }
       ]
     },
     {
@@ -157,15 +653,71 @@
       "name": "自动驾驶",
       "nameEn": "Autonomous Driving",
       "usLeaders": [
-        {"ticker": "TSLA", "name": "Tesla", "weight": 1.0},
-        {"ticker": "MBLY", "name": "Mobileye", "weight": 1.0},
-        {"ticker": "AUR", "name": "Aurora", "weight": 0.6}
+        {
+          "ticker": "TSLA",
+          "name": "Tesla / 特斯拉",
+          "weight": 1.0
+        },
+        {
+          "ticker": "MBLY",
+          "name": "Mobileye /  Mobileye",
+          "weight": 1.0
+        },
+        {
+          "ticker": "AUR",
+          "name": "Aurora /  Aurora",
+          "weight": 0.6
+        }
       ],
       "aTargets": [
-        {"code": "002920", "market": "SZ", "name": "德赛西威", "weight": 1.0},
-        {"code": "002906", "market": "SZ", "name": "华阳集团", "weight": 0.7},
-        {"code": "603596", "market": "SH", "name": "伯特利", "weight": 0.7},
-        {"code": "603197", "market": "SH", "name": "保隆科技", "weight": 0.5}
+        {
+          "code": "002920",
+          "market": "SZ",
+          "name": "德赛西威",
+          "weight": 1.0
+        },
+        {
+          "code": "002906",
+          "market": "SZ",
+          "name": "华阳集团",
+          "weight": 0.7
+        },
+        {
+          "code": "603596",
+          "market": "SH",
+          "name": "伯特利",
+          "weight": 0.7
+        },
+        {
+          "code": "603197",
+          "market": "SH",
+          "name": "保隆科技",
+          "weight": 0.5
+        },
+        {
+          "code": "600699",
+          "market": "SH",
+          "name": "均胜电子",
+          "weight": 0.6
+        },
+        {
+          "code": "002284",
+          "market": "SZ",
+          "name": "亚太股份",
+          "weight": 0.4
+        },
+        {
+          "code": "300496",
+          "market": "SZ",
+          "name": "中科创达",
+          "weight": 0.6
+        },
+        {
+          "code": "002151",
+          "market": "SZ",
+          "name": "北斗星通",
+          "weight": 0.5
+        }
       ]
     },
     {
@@ -173,17 +725,76 @@
       "name": "新能源/光伏/储能",
       "nameEn": "New Energy / Solar / Storage",
       "usLeaders": [
-        {"ticker": "TSLA", "name": "Tesla", "weight": 1.0},
-        {"ticker": "FSLR", "name": "First Solar", "weight": 1.0},
-        {"ticker": "ENPH", "name": "Enphase", "weight": 0.8},
-        {"ticker": "NEE", "name": "NextEra Energy", "weight": 0.7}
+        {
+          "ticker": "TSLA",
+          "name": "Tesla / 特斯拉",
+          "weight": 1.0
+        },
+        {
+          "ticker": "FSLR",
+          "name": "First Solar / 第一太阳能",
+          "weight": 1.0
+        },
+        {
+          "ticker": "ENPH",
+          "name": "Enphase /  Enphase",
+          "weight": 0.8
+        },
+        {
+          "ticker": "NEE",
+          "name": "NextEra Energy / 新纪元能源",
+          "weight": 0.7
+        }
       ],
       "aTargets": [
-        {"code": "300750", "market": "SZ", "name": "宁德时代", "weight": 1.0},
-        {"code": "002594", "market": "SZ", "name": "比亚迪", "weight": 1.0},
-        {"code": "601012", "market": "SH", "name": "隆基绿能", "weight": 1.0},
-        {"code": "300274", "market": "SZ", "name": "阳光电源", "weight": 1.0},
-        {"code": "600438", "market": "SH", "name": "通威股份", "weight": 0.8}
+        {
+          "code": "300750",
+          "market": "SZ",
+          "name": "宁德时代",
+          "weight": 1.0
+        },
+        {
+          "code": "002594",
+          "market": "SZ",
+          "name": "比亚迪",
+          "weight": 1.0
+        },
+        {
+          "code": "601012",
+          "market": "SH",
+          "name": "隆基绿能",
+          "weight": 1.0
+        },
+        {
+          "code": "300274",
+          "market": "SZ",
+          "name": "阳光电源",
+          "weight": 1.0
+        },
+        {
+          "code": "600438",
+          "market": "SH",
+          "name": "通威股份",
+          "weight": 0.8
+        },
+        {
+          "code": "002459",
+          "market": "SZ",
+          "name": "晶澳科技",
+          "weight": 0.7
+        },
+        {
+          "code": "300014",
+          "market": "SZ",
+          "name": "亿纬锂能",
+          "weight": 0.8
+        },
+        {
+          "code": "600885",
+          "market": "SH",
+          "name": "宏发股份",
+          "weight": 0.5
+        }
       ]
     },
     {
@@ -191,14 +802,71 @@
       "name": "铜/资源",
       "nameEn": "Copper / Resources",
       "usLeaders": [
-        {"ticker": "SCCO", "name": "Southern Copper", "weight": 1.0},
-        {"ticker": "FCX", "name": "Freeport-McMoRan", "weight": 1.0},
-        {"ticker": "BHP", "name": "BHP", "weight": 0.8}
+        {
+          "ticker": "SCCO",
+          "name": "Southern Copper / 南方铜业",
+          "weight": 1.0
+        },
+        {
+          "ticker": "FCX",
+          "name": "Freeport-McMoRan / 自由港",
+          "weight": 1.0
+        },
+        {
+          "ticker": "BHP",
+          "name": "BHP / 必和必拓",
+          "weight": 0.8
+        }
       ],
       "aTargets": [
-        {"code": "600362", "market": "SH", "name": "江西铜业", "weight": 1.0},
-        {"code": "000630", "market": "SZ", "name": "铜陵有色", "weight": 0.8},
-        {"code": "600497", "market": "SH", "name": "驰宏锌锗", "weight": 0.5}
+        {
+          "code": "600362",
+          "market": "SH",
+          "name": "江西铜业",
+          "weight": 1.0
+        },
+        {
+          "code": "000630",
+          "market": "SZ",
+          "name": "铜陵有色",
+          "weight": 0.8
+        },
+        {
+          "code": "600497",
+          "market": "SH",
+          "name": "驰宏锌锗",
+          "weight": 0.5
+        },
+        {
+          "code": "601899",
+          "market": "SH",
+          "name": "紫金矿业",
+          "weight": 1.0
+        },
+        {
+          "code": "600547",
+          "market": "SH",
+          "name": "山东黄金",
+          "weight": 0.6
+        },
+        {
+          "code": "000878",
+          "market": "SZ",
+          "name": "云南铜业",
+          "weight": 0.5
+        },
+        {
+          "code": "600489",
+          "market": "SH",
+          "name": "中金黄金",
+          "weight": 0.5
+        },
+        {
+          "code": "601600",
+          "market": "SH",
+          "name": "中国铝业",
+          "weight": 0.5
+        }
       ]
     },
     {
@@ -206,16 +874,76 @@
       "name": "AI软件/大模型",
       "nameEn": "AI Software / LLM",
       "usLeaders": [
-        {"ticker": "MSFT", "name": "Microsoft", "weight": 1.0},
-        {"ticker": "GOOGL", "name": "Alphabet", "weight": 1.0},
-        {"ticker": "META", "name": "Meta", "weight": 1.0},
-        {"ticker": "PLTR", "name": "Palantir", "weight": 0.8}
+        {
+          "ticker": "MSFT",
+          "name": "Microsoft / 微软",
+          "weight": 1.0
+        },
+        {
+          "ticker": "GOOGL",
+          "name": "Alphabet / 谷歌",
+          "weight": 1.0
+        },
+        {
+          "ticker": "META",
+          "name": "Meta / Meta",
+          "weight": 1.0
+        },
+        {
+          "ticker": "PLTR",
+          "name": "Palantir / Palantir",
+          "weight": 0.8
+        }
       ],
       "aTargets": [
-        {"code": "300418", "market": "SZ", "name": "昆仑万维", "weight": 1.0},
-        {"code": "300364", "market": "SZ", "name": "中文在线", "weight": 0.8},
-        {"code": "300339", "market": "SZ", "name": "润和软件", "weight": 0.7},
-        {"code": "300229", "market": "SZ", "name": "拓尔思", "weight": 0.6}
+        {
+          "code": "300418",
+          "market": "SZ",
+          "name": "昆仑万维",
+          "weight": 1.0
+        },
+        {
+          "code": "300364",
+          "market": "SZ",
+          "name": "中文在线",
+          "weight": 0.8
+        },
+        {
+          "code": "300339",
+          "market": "SZ",
+          "name": "润和软件",
+          "weight": 0.7
+        },
+        {
+          "code": "300229",
+          "market": "SZ",
+          "name": "拓尔思",
+          "weight": 0.6
+        },
+        {
+          "code": "002230",
+          "market": "SZ",
+          "name": "科大讯飞",
+          "weight": 1.0
+        },
+        {
+          "code": "300002",
+          "market": "SZ",
+          "name": "神州泰岳",
+          "weight": 0.5
+        },
+        {
+          "code": "300624",
+          "market": "SZ",
+          "name": "万兴科技",
+          "weight": 0.6
+        },
+        {
+          "code": "300166",
+          "market": "SZ",
+          "name": "东方国信",
+          "weight": 0.4
+        }
       ]
     },
     {
@@ -223,14 +951,71 @@
       "name": "存储/内存",
       "nameEn": "Memory / Storage",
       "usLeaders": [
-        {"ticker": "MU", "name": "Micron", "weight": 1.0},
-        {"ticker": "WDC", "name": "Western Digital", "weight": 1.0},
-        {"ticker": "STX", "name": "Seagate", "weight": 0.8}
+        {
+          "ticker": "MU",
+          "name": "Micron / 美光",
+          "weight": 1.0
+        },
+        {
+          "ticker": "WDC",
+          "name": "Western Digital / 西部数据",
+          "weight": 1.0
+        },
+        {
+          "ticker": "STX",
+          "name": "Seagate / 希捷",
+          "weight": 0.8
+        }
       ],
       "aTargets": [
-        {"code": "603986", "market": "SH", "name": "兆易创新", "weight": 1.0},
-        {"code": "688525", "market": "SH", "name": "佰维存储", "weight": 0.8},
-        {"code": "688766", "market": "SH", "name": "普冉股份", "weight": 0.7}
+        {
+          "code": "603986",
+          "market": "SH",
+          "name": "兆易创新",
+          "weight": 1.0
+        },
+        {
+          "code": "688525",
+          "market": "SH",
+          "name": "佰维存储",
+          "weight": 0.8
+        },
+        {
+          "code": "688766",
+          "market": "SH",
+          "name": "普冉股份",
+          "weight": 0.7
+        },
+        {
+          "code": "688123",
+          "market": "SH",
+          "name": "聚辰股份",
+          "weight": 0.6
+        },
+        {
+          "code": "300223",
+          "market": "SZ",
+          "name": "北京君正",
+          "weight": 0.6
+        },
+        {
+          "code": "688216",
+          "market": "SH",
+          "name": "气派科技",
+          "weight": 0.4
+        },
+        {
+          "code": "600171",
+          "market": "SH",
+          "name": "上海贝岭",
+          "weight": 0.5
+        },
+        {
+          "code": "688385",
+          "market": "SH",
+          "name": "复旦微电",
+          "weight": 0.5
+        }
       ]
     },
     {
@@ -238,13 +1023,66 @@
       "name": "动力电池/锂电",
       "nameEn": "EV Battery / Lithium",
       "usLeaders": [
-        {"ticker": "TSLA", "name": "Tesla", "weight": 1.0},
-        {"ticker": "ALB", "name": "Albemarle", "weight": 1.0}
+        {
+          "ticker": "TSLA",
+          "name": "Tesla / 特斯拉",
+          "weight": 1.0
+        },
+        {
+          "ticker": "ALB",
+          "name": "Albemarle / 雅宝",
+          "weight": 1.0
+        }
       ],
       "aTargets": [
-        {"code": "300750", "market": "SZ", "name": "宁德时代", "weight": 1.0},
-        {"code": "002709", "market": "SZ", "name": "天赐材料", "weight": 0.8},
-        {"code": "300014", "market": "SZ", "name": "亿纬锂能", "weight": 0.9}
+        {
+          "code": "300750",
+          "market": "SZ",
+          "name": "宁德时代",
+          "weight": 1.0
+        },
+        {
+          "code": "002709",
+          "market": "SZ",
+          "name": "天赐材料",
+          "weight": 0.8
+        },
+        {
+          "code": "300014",
+          "market": "SZ",
+          "name": "亿纬锂能",
+          "weight": 0.9
+        },
+        {
+          "code": "002812",
+          "market": "SZ",
+          "name": "恩捷股份",
+          "weight": 0.8
+        },
+        {
+          "code": "300073",
+          "market": "SZ",
+          "name": "当升科技",
+          "weight": 0.7
+        },
+        {
+          "code": "603659",
+          "market": "SH",
+          "name": "璞泰来",
+          "weight": 0.7
+        },
+        {
+          "code": "002074",
+          "market": "SZ",
+          "name": "国轩高科",
+          "weight": 0.6
+        },
+        {
+          "code": "300450",
+          "market": "SZ",
+          "name": "先导智能",
+          "weight": 0.6
+        }
       ]
     },
     {
@@ -252,14 +1090,726 @@
       "name": "医疗器械",
       "nameEn": "Medical Devices",
       "usLeaders": [
-        {"ticker": "ISRG", "name": "Intuitive Surgical", "weight": 1.0},
-        {"ticker": "SYK", "name": "Stryker", "weight": 1.0},
-        {"ticker": "MDT", "name": "Medtronic", "weight": 0.8}
+        {
+          "ticker": "ISRG",
+          "name": "Intuitive Surgical / 直觉外科",
+          "weight": 1.0
+        },
+        {
+          "ticker": "SYK",
+          "name": "Stryker / 史赛克",
+          "weight": 1.0
+        },
+        {
+          "ticker": "MDT",
+          "name": "Medtronic / 美敦力",
+          "weight": 0.8
+        }
       ],
       "aTargets": [
-        {"code": "300760", "market": "SZ", "name": "迈瑞医疗", "weight": 1.0},
-        {"code": "688617", "market": "SH", "name": "惠泰医疗", "weight": 0.8},
-        {"code": "688580", "market": "SH", "name": "伟思医疗", "weight": 0.5}
+        {
+          "code": "300760",
+          "market": "SZ",
+          "name": "迈瑞医疗",
+          "weight": 1.0
+        },
+        {
+          "code": "688617",
+          "market": "SH",
+          "name": "惠泰医疗",
+          "weight": 0.8
+        },
+        {
+          "code": "688580",
+          "market": "SH",
+          "name": "伟思医疗",
+          "weight": 0.5
+        },
+        {
+          "code": "600587",
+          "market": "SH",
+          "name": "新华医疗",
+          "weight": 0.5
+        },
+        {
+          "code": "300003",
+          "market": "SZ",
+          "name": "乐普医疗",
+          "weight": 0.7
+        },
+        {
+          "code": "603309",
+          "market": "SH",
+          "name": "维力医疗",
+          "weight": 0.4
+        },
+        {
+          "code": "688198",
+          "market": "SH",
+          "name": "佰仁医疗",
+          "weight": 0.5
+        },
+        {
+          "code": "300326",
+          "market": "SZ",
+          "name": "凯利泰",
+          "weight": 0.4
+        }
+      ]
+    },
+    {
+      "id": "cro-pharma",
+      "name": "CRO/创新药",
+      "nameEn": "CRO / Innovative Pharma",
+      "usLeaders": [
+        {
+          "ticker": "LLY",
+          "name": "Eli Lilly / 礼来",
+          "weight": 1.0
+        },
+        {
+          "ticker": "PFE",
+          "name": "Pfizer / 辉瑞",
+          "weight": 1.0
+        },
+        {
+          "ticker": "BIIB",
+          "name": "Biogen / 渤健",
+          "weight": 0.8
+        },
+        {
+          "ticker": "VRTX",
+          "name": "Vertex / 福泰制药",
+          "weight": 0.8
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "603259",
+          "market": "SH",
+          "name": "药明康德",
+          "weight": 1.0
+        },
+        {
+          "code": "300759",
+          "market": "SZ",
+          "name": "康龙化成",
+          "weight": 0.9
+        },
+        {
+          "code": "300347",
+          "market": "SZ",
+          "name": "泰格医药",
+          "weight": 0.9
+        },
+        {
+          "code": "603127",
+          "market": "SH",
+          "name": "昭衍新药",
+          "weight": 0.6
+        },
+        {
+          "code": "688202",
+          "market": "SH",
+          "name": "美迪西",
+          "weight": 0.5
+        },
+        {
+          "code": "688076",
+          "market": "SH",
+          "name": "诺泰生物",
+          "weight": 0.5
+        },
+        {
+          "code": "600276",
+          "market": "SH",
+          "name": "恒瑞医药",
+          "weight": 1.0
+        },
+        {
+          "code": "688180",
+          "market": "SH",
+          "name": "君实生物",
+          "weight": 0.6
+        }
+      ]
+    },
+    {
+      "id": "cloud-saas",
+      "name": "云计算/SaaS",
+      "nameEn": "Cloud / SaaS",
+      "usLeaders": [
+        {
+          "ticker": "CRM",
+          "name": "Salesforce / Salesforce",
+          "weight": 1.0
+        },
+        {
+          "ticker": "NET",
+          "name": "Cloudflare / Cloudflare",
+          "weight": 0.8
+        },
+        {
+          "ticker": "SNOW",
+          "name": "Snowflake / Snowflake",
+          "weight": 0.8
+        },
+        {
+          "ticker": "NOW",
+          "name": "ServiceNow / ServiceNow",
+          "weight": 0.8
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "600588",
+          "market": "SH",
+          "name": "用友网络",
+          "weight": 1.0
+        },
+        {
+          "code": "688111",
+          "market": "SH",
+          "name": "金山办公",
+          "weight": 1.0
+        },
+        {
+          "code": "002410",
+          "market": "SZ",
+          "name": "广联达",
+          "weight": 0.8
+        },
+        {
+          "code": "600845",
+          "market": "SH",
+          "name": "宝信软件",
+          "weight": 0.7
+        },
+        {
+          "code": "300451",
+          "market": "SZ",
+          "name": "创业慧康",
+          "weight": 0.4
+        },
+        {
+          "code": "300253",
+          "market": "SZ",
+          "name": "卫宁健康",
+          "weight": 0.5
+        },
+        {
+          "code": "300624",
+          "market": "SZ",
+          "name": "万兴科技",
+          "weight": 0.6
+        },
+        {
+          "code": "600728",
+          "market": "SH",
+          "name": "佳都科技",
+          "weight": 0.4
+        }
+      ]
+    },
+    {
+      "id": "cybersecurity",
+      "name": "网络安全",
+      "nameEn": "Cybersecurity",
+      "usLeaders": [
+        {
+          "ticker": "PANW",
+          "name": "Palo Alto Networks / 派拓网络",
+          "weight": 1.0
+        },
+        {
+          "ticker": "FTNT",
+          "name": "Fortinet / 飞塔",
+          "weight": 0.9
+        },
+        {
+          "ticker": "CRWD",
+          "name": "CrowdStrike / CrowdStrike",
+          "weight": 1.0
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "688561",
+          "market": "SH",
+          "name": "奇安信",
+          "weight": 1.0
+        },
+        {
+          "code": "300454",
+          "market": "SZ",
+          "name": "深信服",
+          "weight": 1.0
+        },
+        {
+          "code": "002439",
+          "market": "SZ",
+          "name": "启明星辰",
+          "weight": 0.9
+        },
+        {
+          "code": "300369",
+          "market": "SZ",
+          "name": "绿盟科技",
+          "weight": 0.6
+        },
+        {
+          "code": "300188",
+          "market": "SZ",
+          "name": "美亚柏科",
+          "weight": 0.5
+        },
+        {
+          "code": "688225",
+          "market": "SH",
+          "name": "亚信安全",
+          "weight": 0.5
+        },
+        {
+          "code": "300768",
+          "market": "SZ",
+          "name": "迪普科技",
+          "weight": 0.4
+        },
+        {
+          "code": "603232",
+          "market": "SH",
+          "name": "格尔软件",
+          "weight": 0.4
+        }
+      ]
+    },
+    {
+      "id": "consumer-electronics",
+      "name": "消费电子",
+      "nameEn": "Consumer Electronics",
+      "usLeaders": [
+        {
+          "ticker": "AAPL",
+          "name": "Apple / 苹果",
+          "weight": 1.0
+        },
+        {
+          "ticker": "SONY",
+          "name": "Sony / 索尼",
+          "weight": 0.8
+        },
+        {
+          "ticker": "GOOGL",
+          "name": "Alphabet / 谷歌",
+          "weight": 0.7
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "002475",
+          "market": "SZ",
+          "name": "立讯精密",
+          "weight": 1.0
+        },
+        {
+          "code": "002241",
+          "market": "SZ",
+          "name": "歌尔股份",
+          "weight": 0.9
+        },
+        {
+          "code": "300433",
+          "market": "SZ",
+          "name": "蓝思科技",
+          "weight": 0.8
+        },
+        {
+          "code": "601231",
+          "market": "SH",
+          "name": "环旭电子",
+          "weight": 0.6
+        },
+        {
+          "code": "002600",
+          "market": "SZ",
+          "name": "领益智造",
+          "weight": 0.6
+        },
+        {
+          "code": "300136",
+          "market": "SZ",
+          "name": "信维通信",
+          "weight": 0.5
+        },
+        {
+          "code": "002273",
+          "market": "SZ",
+          "name": "水晶光电",
+          "weight": 0.5
+        },
+        {
+          "code": "603380",
+          "market": "SH",
+          "name": "易德龙",
+          "weight": 0.4
+        }
+      ]
+    },
+    {
+      "id": "defense-aerospace",
+      "name": "军工/航空航天",
+      "nameEn": "Defense / Aerospace",
+      "usLeaders": [
+        {
+          "ticker": "LMT",
+          "name": "Lockheed Martin / 洛克希德·马丁",
+          "weight": 1.0
+        },
+        {
+          "ticker": "NOC",
+          "name": "Northrop Grumman / 诺斯洛普·格鲁曼",
+          "weight": 1.0
+        },
+        {
+          "ticker": "RTX",
+          "name": "RTX / RTX",
+          "weight": 1.0
+        },
+        {
+          "ticker": "BA",
+          "name": "Boeing / 波音",
+          "weight": 0.8
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "600760",
+          "market": "SH",
+          "name": "中航沈飞",
+          "weight": 1.0
+        },
+        {
+          "code": "600893",
+          "market": "SH",
+          "name": "航发动力",
+          "weight": 1.0
+        },
+        {
+          "code": "000768",
+          "market": "SZ",
+          "name": "中航西飞",
+          "weight": 0.9
+        },
+        {
+          "code": "600372",
+          "market": "SH",
+          "name": "中航电子",
+          "weight": 0.7
+        },
+        {
+          "code": "600038",
+          "market": "SH",
+          "name": "中直股份",
+          "weight": 0.7
+        },
+        {
+          "code": "600391",
+          "market": "SH",
+          "name": "航发科技",
+          "weight": 0.5
+        },
+        {
+          "code": "600862",
+          "market": "SH",
+          "name": "中航高科",
+          "weight": 0.5
+        },
+        {
+          "code": "600765",
+          "market": "SH",
+          "name": "中航重机",
+          "weight": 0.6
+        }
+      ]
+    },
+    {
+      "id": "fintech",
+      "name": "金融科技/支付",
+      "nameEn": "FinTech / Payments",
+      "usLeaders": [
+        {
+          "ticker": "V",
+          "name": "Visa / Visa",
+          "weight": 1.0
+        },
+        {
+          "ticker": "MA",
+          "name": "Mastercard / 万事达",
+          "weight": 1.0
+        },
+        {
+          "ticker": "PYPL",
+          "name": "PayPal / PayPal",
+          "weight": 0.8
+        },
+        {
+          "ticker": "COIN",
+          "name": "Coinbase / Coinbase",
+          "weight": 0.6
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "300059",
+          "market": "SZ",
+          "name": "东方财富",
+          "weight": 1.0
+        },
+        {
+          "code": "300033",
+          "market": "SZ",
+          "name": "同花顺",
+          "weight": 1.0
+        },
+        {
+          "code": "600570",
+          "market": "SH",
+          "name": "恒生电子",
+          "weight": 0.9
+        },
+        {
+          "code": "300339",
+          "market": "SZ",
+          "name": "润和软件",
+          "weight": 0.6
+        },
+        {
+          "code": "600536",
+          "market": "SH",
+          "name": "中国软件",
+          "weight": 0.5
+        },
+        {
+          "code": "000948",
+          "market": "SZ",
+          "name": "南天信息",
+          "weight": 0.4
+        },
+        {
+          "code": "300377",
+          "market": "SZ",
+          "name": "赢时胜",
+          "weight": 0.4
+        },
+        {
+          "code": "300348",
+          "market": "SZ",
+          "name": "长亮科技",
+          "weight": 0.5
+        }
+      ]
+    },
+    {
+      "id": "chemicals",
+      "name": "化工/新材料",
+      "nameEn": "Chemicals / New Materials",
+      "usLeaders": [
+        {
+          "ticker": "DD",
+          "name": "DuPont / 杜邦",
+          "weight": 1.0
+        },
+        {
+          "ticker": "DOW",
+          "name": "Dow / 陶氏",
+          "weight": 1.0
+        },
+        {
+          "ticker": "ALB",
+          "name": "Albemarle / 雅宝",
+          "weight": 0.8
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "600309",
+          "market": "SH",
+          "name": "万华化学",
+          "weight": 1.0
+        },
+        {
+          "code": "600426",
+          "market": "SH",
+          "name": "华鲁恒升",
+          "weight": 0.9
+        },
+        {
+          "code": "002001",
+          "market": "SZ",
+          "name": "新和成",
+          "weight": 0.8
+        },
+        {
+          "code": "600352",
+          "market": "SH",
+          "name": "浙江龙盛",
+          "weight": 0.6
+        },
+        {
+          "code": "002812",
+          "market": "SZ",
+          "name": "恩捷股份",
+          "weight": 0.7
+        },
+        {
+          "code": "300073",
+          "market": "SZ",
+          "name": "当升科技",
+          "weight": 0.6
+        },
+        {
+          "code": "603799",
+          "market": "SH",
+          "name": "华友钴业",
+          "weight": 0.8
+        },
+        {
+          "code": "600160",
+          "market": "SH",
+          "name": "巨化股份",
+          "weight": 0.6
+        }
+      ]
+    },
+    {
+      "id": "gaming-media",
+      "name": "传媒/游戏",
+      "nameEn": "Gaming / Media",
+      "usLeaders": [
+        {
+          "ticker": "EA",
+          "name": "Electronic Arts / 艺电",
+          "weight": 1.0
+        },
+        {
+          "ticker": "TTWO",
+          "name": "Take-Two / Take-Two",
+          "weight": 0.9
+        },
+        {
+          "ticker": "NFLX",
+          "name": "Netflix / 奈飞",
+          "weight": 1.0
+        },
+        {
+          "ticker": "DIS",
+          "name": "Disney / 迪士尼",
+          "weight": 0.8
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "002555",
+          "market": "SZ",
+          "name": "三七互娱",
+          "weight": 1.0
+        },
+        {
+          "code": "002624",
+          "market": "SZ",
+          "name": "完美世界",
+          "weight": 0.9
+        },
+        {
+          "code": "603444",
+          "market": "SH",
+          "name": "吉比特",
+          "weight": 0.9
+        },
+        {
+          "code": "300418",
+          "market": "SZ",
+          "name": "昆仑万维",
+          "weight": 0.8
+        },
+        {
+          "code": "002602",
+          "market": "SZ",
+          "name": "世纪华通",
+          "weight": 0.7
+        },
+        {
+          "code": "300031",
+          "market": "SZ",
+          "name": "宝通科技",
+          "weight": 0.5
+        },
+        {
+          "code": "300052",
+          "market": "SZ",
+          "name": "中青宝",
+          "weight": 0.4
+        },
+        {
+          "code": "600373",
+          "market": "SH",
+          "name": "中文传媒",
+          "weight": 0.5
+        }
+      ]
+    },
+    {
+      "id": "index-mapping",
+      "name": "指数映射",
+      "nameEn": "Index Mapping",
+      "type": "index",
+      "usLeaders": [
+        {
+          "ticker": "SOX",
+          "name": "费城半导体指数",
+          "weight": 1.0
+        },
+        {
+          "ticker": "NDX",
+          "name": "纳斯达克100",
+          "weight": 1.0
+        },
+        {
+          "ticker": "SPX",
+          "name": "标普500",
+          "weight": 1.0
+        },
+        {
+          "ticker": "DJI",
+          "name": "道琼斯工业指数",
+          "weight": 1.0
+        }
+      ],
+      "aTargets": [
+        {
+          "code": "H30091",
+          "market": "SZ",
+          "name": "半导体指数",
+          "weight": 1.0
+        },
+        {
+          "code": "399006",
+          "market": "SZ",
+          "name": "创业板指",
+          "weight": 1.0
+        },
+        {
+          "code": "000300",
+          "market": "SH",
+          "name": "沪深300",
+          "weight": 1.0
+        },
+        {
+          "code": "000001",
+          "market": "SH",
+          "name": "上证指数",
+          "weight": 1.0
+        }
       ]
     }
   ]

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-美股-A股映射雷达站 v4 — 25板块+券商研报风格+指数映射
+美股-A股映射雷达站 v5 — 42板块+极高密度+红色主题+指数映射
 """
-import json, os, time, re, threading, sys
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import json, os, time, re, threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import requests
@@ -12,12 +11,10 @@ from flask import Flask, jsonify, render_template_string
 
 APP_DIR = Path(__file__).parent
 REFRESH_INTERVAL = 300
-API_TIMEOUT = 12
 
 with open(APP_DIR / "mapping.json", "r", encoding="utf-8") as f:
     MAPPING = json.load(f)
 
-# 指数映射配置：美股指数 ↔ A股指数
 INDEX_CONFIG = [
     {"usTicker": "^SOX", "usName": "SOX", "usLabel": "费城半导体", "aCode": "sh512480", "aName": "半导体ETF", "aLabel": "半导体"},
     {"usTicker": "^NDX", "usName": "NDX", "usLabel": "纳指100", "aCode": "sz399006", "aName": "创业板指", "aLabel": "创业板"},
@@ -27,7 +24,7 @@ INDEX_CONFIG = [
 
 class Fetcher:
     def __init__(self):
-        self.cache = {"us": {}, "a": {}, "sectors": [], "indices": {}, "updatedAt": None, "marketStatus": {}}
+        self.cache = {"usDate": "", "aDate": "", "indices": [], "sectors": []}
         self.lock = threading.Lock()
         self.headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
@@ -47,7 +44,7 @@ class Fetcher:
                     results[t] = {"error": "no data"}
             except Exception as e:
                 results[t] = {"error": str(e)}
-            time.sleep(0.1)
+            time.sleep(0.05)
         return results
 
     def _fetch_a(self, stocks):
@@ -73,38 +70,21 @@ class Fetcher:
         return results
 
     def _fetch_indices(self):
-        """获取指数映射数据：美股指数 + A股指数"""
         indices = {}
-        # 美股指数（Yahoo Finance）
         us_tickers = [idx["usTicker"] for idx in INDEX_CONFIG]
         us_data = self._fetch_us(us_tickers)
         for idx in INDEX_CONFIG:
             t = idx["usTicker"]
             info = us_data.get(t, {})
             if info.get("status") == "ok":
-                indices[t] = {
-                    "price": info["price"],
-                    "change": info["change"],
-                    "changePercent": info["changePercent"],
-                    "status": "ok"
-                }
-            else:
-                indices[t] = {"error": info.get("error", "fetch failed"), "status": "error"}
-        # A股指数（腾讯行情）
+                indices[t] = {"price": info["price"], "change": info["change"], "changePercent": info["changePercent"], "status": "ok"}
         a_codes = [{"market": idx["aCode"][:2].upper(), "code": idx["aCode"][2:]} for idx in INDEX_CONFIG]
         a_data = self._fetch_a(a_codes)
         for idx in INDEX_CONFIG:
             ac = idx["aCode"][2:]
             info = a_data.get(ac, {})
             if info.get("status") == "ok":
-                indices[idx["aCode"]] = {
-                    "price": info["price"],
-                    "change": info["change"],
-                    "changePercent": info["changePercent"],
-                    "status": "ok"
-                }
-            else:
-                indices[idx["aCode"]] = {"error": info.get("error", "fetch failed"), "status": "error"}
+                indices[idx["aCode"]] = {"price": info["price"], "change": info["change"], "changePercent": info["changePercent"], "status": "ok"}
         return indices
 
     def refresh(self):
@@ -112,60 +92,82 @@ class Fetcher:
         all_us = set()
         all_a = []
         for s in MAPPING["sectors"]:
-            for u in s["usLeaders"]:
+            for u in s.get("usLeaders", []):
                 all_us.add(u["ticker"])
-            for a in s["aTargets"]:
+            for a in s.get("aTargets", []):
                 all_a.append(a)
         seen = set()
         uniq_a = [s for s in all_a if not (s["code"] in seen or seen.add(s["code"]))]
         us_data = self._fetch_us(list(all_us))
         a_data = self._fetch_a(uniq_a)
-        # 获取指数映射数据
         indices_data = self._fetch_indices()
+
+        # Build v5 format
+        now = datetime.now(timezone(timedelta(hours=8)))
+        us_date = now.strftime("%Y-%m-%d")
+        yesterday = now - timedelta(days=1)
+        a_date = yesterday.strftime("%Y-%m-%d")
+
+        # Indices
+        indices = []
+        for idx in INDEX_CONFIG:
+            us_info = indices_data.get(idx["usTicker"], {})
+            a_info = indices_data.get(idx["aCode"], {})
+            us_chg = us_info.get("changePercent", 0) if us_info.get("status") == "ok" else 0
+            a_chg = a_info.get("changePercent", 0) if a_info.get("status") == "ok" else 0
+            indices.append({
+                "name": f"{idx['usName']} ↔ {idx['aLabel']}",
+                "pair": f"{idx['usName']} ↔ {idx['aLabel']}",
+                "chg": round(us_chg, 2),
+                "desc": f"{idx['usLabel']} vs A股{idx['aLabel']}"
+            })
+
+        # Sectors
         sectors = []
         for sector in MAPPING["sectors"]:
-            # 跳过纯指数映射板块（已在 indices 中展示）
             if sector.get("type") == "index":
                 continue
-            tw = sum(u.get("weight", 1) for u in sector["usLeaders"])
+            tw = sum(u.get("weight", 1) for u in sector.get("usLeaders", []))
             wp = 0.0
-            usl = []
-            for u in sector["usLeaders"]:
+            us_stocks = []
+            for u in sector.get("usLeaders", []):
                 info = us_data.get(u["ticker"], {})
                 p = info.get("changePercent")
                 if p is not None:
                     wp += p * u.get("weight", 1)
-                usl.append({"ticker": u["ticker"], "name": u["name"], "weight": u.get("weight", 1), **info})
+                name = u.get("name", u["ticker"])
+                us_stocks.append({
+                    "code": u["ticker"],
+                    "name": name,
+                    "chg": round(info.get("changePercent", 0), 2) if info.get("status") == "ok" else 0
+                })
             wp = wp / tw if tw else 0
-            at = []
-            for a in sector["aTargets"]:
+
+            a_stocks = []
+            for a in sector.get("aTargets", []):
                 info = a_data.get(a["code"], {})
-                at.append({"code": a["code"], "name": a["name"], "market": a["market"], "weight": a.get("weight", 1), **info})
-            g, gt, gc = "neutral", "中性", "gray"
-            if wp is None:
-                g, gt, gc = "unknown", "暂无", "gray"
-            elif wp >= 5:
-                g, gt, gc = "strong_positive", "强利好", "red"
-            elif wp >= 2:
-                g, gt, gc = "positive", "利好", "red"
-            elif wp > -2:
-                g, gt, gc = "neutral", "中性", "gray"
-            elif wp > -5:
-                g, gt, gc = "negative", "利空", "green"
-            else:
-                g, gt, gc = "strong_negative", "强利空", "green"
-            sectors.append({"id": sector["id"], "name": sector["name"], "nameEn": sector["nameEn"], "usWeightedPct": round(wp, 2), "usLeaders": usl, "aTargets": at, "guidance": {"level": g, "text": gt, "color": gc}})
-        sectors.sort(key=lambda x: abs(x.get("usWeightedPct", 0)), reverse=True)
-        now = datetime.now(timezone(timedelta(hours=8)))
-        t = now.time()
-        wd = now.weekday()
-        us_open = t.hour >= 21 or t.hour <= 5
-        a_open = wd < 5 and ((9 <= t.hour <= 10) or (t.hour == 11 and t.minute <= 30) or (13 <= t.hour <= 14) or (t.hour == 15 and t.minute == 0))
-        a_label = "A股交易中" if a_open else ("A股未开盘" if wd < 5 and t.hour < 9 else "A股已收盘")
-        ms = {"time": now.strftime("%Y-%m-%d %H:%M"), "us": "美股交易中" if us_open else "美股已收盘", "a": a_label, "isUSOpen": us_open, "isAOpen": a_open}
+                a_stocks.append({
+                    "code": a["code"],
+                    "name": a["name"],
+                    "chg": round(info.get("changePercent", 0), 2) if info.get("status") == "ok" else 0
+                })
+            # Sort A-shares by change desc
+            a_stocks.sort(key=lambda x: x["chg"], reverse=True)
+
+            direction = "up" if wp >= 2 else "down" if wp <= -2 else "neutral"
+            sectors.append({
+                "name": sector["name"],
+                "weightedChg": round(wp, 2),
+                "direction": direction,
+                "usStocks": us_stocks,
+                "aStocks": a_stocks
+            })
+
+        sectors.sort(key=lambda x: abs(x["weightedChg"]), reverse=True)
+
         with self.lock:
-            self.cache = {"us": us_data, "a": a_data, "sectors": sectors, "indices": indices_data, "updatedAt": now.isoformat(), "marketStatus": ms}
-        print(f"[{datetime.now()}] 刷新完成 US={len(us_data)} A={len(a_data)} Indices={len(indices_data)}")
+            self.cache = {"usDate": us_date, "aDate": a_date, "indices": indices, "sectors": sectors}
+        print(f"[{datetime.now()}] 刷新完成 板块={len(sectors)} 美股={len(us_data)} A股={len(a_data)} 指数={len(indices_data)}")
 
 fetcher = Fetcher()
 app = Flask(__name__)
@@ -192,593 +194,472 @@ HTML_PAGE = '''
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="format-detection" content="telephone=no">
-<title>美股-A股映射雷达</title>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美股-A股映射雷达站</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
-/* ===== 基础重置 ===== */
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html { font-size: 14px; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
-  background: #ffffff;
-  color: #333333;
-  line-height: 1.35;
-  -webkit-font-smoothing: antialiased;
+/* Reset */
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Microsoft YaHei,SimHei,sans-serif;}
+html,body{width:100%;min-height:100vh;background:#ffffff;}
+
+/* Typography */
+body{font-size:12px;line-height:1.15;color:#212121;}
+
+/* Header */
+.page-header{
+  background:#b71c1c;
+  color:#fff;
+  padding:6px 8px;
+  text-align:center;
+  border-bottom:2px solid #7f0000;
+}
+.page-header h1{
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:0.5px;
+  margin:0;
+  line-height:1.2;
+}
+.page-header .sub{
+  font-size:10px;
+  opacity:0.9;
+  margin-top:2px;
+  line-height:1.2;
+}
+.page-header .dates{
+  font-size:10px;
+  margin-top:3px;
+  opacity:0.85;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  line-height:1.2;
+}
+.page-header .dates span{
+  background:rgba(255,255,255,0.15);
+  padding:1px 5px;
+  border-radius:0;
+  white-space:nowrap;
 }
 
-/* ===== 颜色系统：红/绿/灰 ===== */
-.up { color: #c62828; }
-.down { color: #2e7d32; }
-.neutral { color: #757575; }
-.up-bg { background-color: #ffebee; }
-.down-bg { background-color: #e8f5e9; }
-.neutral-bg { background-color: #f5f5f5; }
+/* Controls bar */
+.controls{
+  display:flex;
+  gap:4px;
+  padding:4px 6px;
+  background:#f5f5f5;
+  border-bottom:1px solid #e0e0e0;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.controls input[type="text"]{
+  flex:1;min-width:90px;
+  font-size:11px;padding:2px 5px;
+  border:1px solid #ccc;background:#fff;
+  height:22px;
+}
+.controls select{
+  font-size:11px;padding:2px 4px;
+  border:1px solid #ccc;background:#fff;
+  height:22px;
+}
+.controls button{
+  font-size:11px;padding:2px 8px;
+  border:1px solid #7f0000;background:#c62828;color:#fff;
+  cursor:pointer;height:22px;
+  font-weight:600;
+}
+.controls button:hover{background:#b71c1c;}
 
-/* ===== 标题栏 ===== */
-.header {
-  background: #1a3a6c;
-  color: #ffffff;
-  padding: 8px 12px;
-  border-bottom: 1px solid #0d1f3a;
+/* Summary strip */
+.summary-strip{
+  display:flex;
+  gap:2px;
+  padding:3px 6px;
+  background:#fafafa;
+  border-bottom:1px solid #e0e0e0;
+  font-size:11px;
+  justify-content:center;
+  flex-wrap:wrap;
 }
-.header-title { font-size: 16px; font-weight: 700; letter-spacing: 0.3px; }
-.header-sub { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 1px; }
-.header-meta {
-  font-size: 11px;
-  color: rgba(255,255,255,0.7);
-  margin-top: 4px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.summary-strip .chip{
+  padding:1px 6px;
+  border:1px solid #ddd;
+  background:#fff;
+  white-space:nowrap;
 }
-.status-dot {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  margin-right: 3px;
-  vertical-align: middle;
-}
-.status-open { background: #4caf50; }
-.status-close { background: #9e9e9e; }
+.summary-strip .chip strong{font-size:12px;}
+.summary-strip .chip.up{color:#c62828;border-color:#ffcdd2;}
+.summary-strip .chip.mid{color:#757575;border-color:#e0e0e0;}
+.summary-strip .chip.down{color:#2e7d32;border-color:#c8e6c9;}
 
-/* ===== 指数映射区域 ===== */
-.index-section { border-bottom: 1px solid #e0e0e0; }
-.index-section-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: #1a3a6c;
-  padding: 4px 12px;
-  background: #f0f2f5;
-  border-bottom: 1px solid #e0e0e0;
-  letter-spacing: 0.5px;
+/* Index mapping area */
+.index-map{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:3px;
+  padding:4px 6px;
+  border-bottom:1px solid #e0e0e0;
+  background:#fafafa;
 }
-.index-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+.index-card{
+  border:1px solid #e0e0e0;
+  background:#fff;
+  padding:3px 4px;
+  text-align:center;
 }
-.index-cell {
-  padding: 5px 4px;
-  text-align: center;
-  border-right: 1px solid #e8e8e8;
-  border-bottom: 1px solid #e8e8e8;
+.index-card .pair{
+  font-size:10px;font-weight:700;color:#b71c1c;
+  line-height:1.1;
 }
-.index-cell:nth-child(4n) { border-right: none; }
-.index-us-label { font-size: 10px; color: #888; }
-.index-us-name { font-size: 11px; font-weight: 600; }
-.index-us-value {
-  font-size: 12px;
-  font-weight: 700;
-  font-family: "SF Mono", "Segoe UI Mono", Consolas, "Liberation Mono", Menlo, monospace;
-  margin-top: 1px;
+.index-card .name{
+  font-size:10px;color:#616161;
+  line-height:1.1;
+  margin-top:1px;
 }
-.index-arrow {
-  font-size: 9px;
-  color: #bbb;
-  margin: 1px 0;
-  line-height: 1;
+.index-card .chg{
+  font-size:11px;font-weight:700;
+  line-height:1.1;
+  margin-top:2px;
 }
-.index-a-name { font-size: 10px; color: #666; }
-.index-a-value {
-  font-size: 11px;
-  font-weight: 600;
-  font-family: "SF Mono", "Segoe UI Mono", Consolas, "Liberation Mono", Menlo, monospace;
-  margin-top: 1px;
-}
+.index-card .chg.up{color:#c62828;}
+.index-card .chg.down{color:#2e7d32;}
+.index-card .arrow{font-size:10px;}
 
-/* ===== 工具栏 ===== */
-.toolbar {
-  padding: 6px 10px;
-  display: flex;
-  gap: 6px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #ffffff;
-  align-items: center;
+/* Sector Grid */
+.sector-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:4px;
+  padding:4px 6px;
 }
-.toolbar input {
-  flex: 1;
-  border: 1px solid #d0d0d0;
-  padding: 4px 7px;
-  font-size: 12px;
-  border-radius: 0;
-  font-family: inherit;
-  min-width: 0;
+@media(max-width:900px){
+  .sector-grid{grid-template-columns:repeat(2,1fr);}
 }
-.toolbar select {
-  border: 1px solid #d0d0d0;
-  padding: 4px 5px;
-  font-size: 12px;
-  border-radius: 0;
-  font-family: inherit;
-  background: #fff;
-}
-.btn {
-  padding: 4px 8px;
-  font-size: 12px;
-  border: 1px solid #ccc;
-  background: #f5f5f5;
-  cursor: pointer;
-  border-radius: 0;
-  font-family: inherit;
-  white-space: nowrap;
-}
-.btn-primary {
-  background: #1a3a6c;
-  color: #fff;
-  border-color: #1a3a6c;
+@media(max-width:540px){
+  .sector-grid{grid-template-columns:1fr;}
 }
 
-/* ===== 统计摘要 ===== */
-.summary {
-  display: flex;
-  padding: 5px 10px;
-  gap: 5px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #fafafa;
+/* Sector block */
+.sector-block{
+  border:1px solid #e0e0e0;
+  background:#fff;
 }
-.summary-item {
-  flex: 1;
-  text-align: center;
-  padding: 3px 2px;
-  border: 1px solid #e0e0e0;
-  background: #fff;
+.sector-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:3px 5px;
+  background:#b71c1c;
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.2;
+  min-height:20px;
 }
-.summary-num {
-  font-size: 14px;
-  font-weight: 700;
-  font-family: "SF Mono", Consolas, monospace;
+.sector-header .right{
+  display:flex;align-items:center;gap:6px;font-size:10px;font-weight:400;
 }
-.summary-label {
-  font-size: 10px;
-  color: #666;
-  margin-top: 1px;
+.sector-header .wchg{
+  font-weight:700;
 }
-
-/* ===== 板块区域 ===== */
-.sector-block { border-bottom: 1px solid #e0e0e0; }
-.sector-block:last-child { border-bottom: none; }
-.sector-header {
-  background: #1a3a6c;
-  color: #fff;
-  padding: 4px 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.sector-name-row {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.sector-arrow {
-  font-size: 10px;
-  width: 12px;
-  text-align: center;
-}
-.sector-name { font-size: 13px; font-weight: 700; }
-.sector-pct {
-  font-size: 13px;
-  font-weight: 700;
-  font-family: "SF Mono", Consolas, monospace;
+.sector-header .mapdir{
+  font-weight:700;
+  padding:0 3px;
+  border:1px solid rgba(255,255,255,0.5);
 }
 
-/* ===== 数据表格（紧凑） ===== */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
+/* Table inside sector */
+.sector-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:11px;
+  table-layout:fixed;
 }
-.data-table thead th {
-  background: #f5f5f5;
-  font-size: 10px;
-  font-weight: 600;
-  color: #777;
-  padding: 2px 5px;
-  text-align: left;
-  border-bottom: 1px solid #d0d0d0;
-  white-space: nowrap;
+.sector-table th, .sector-table td{
+  padding:1px 3px;
+  border:1px solid #e0e0e0;
+  text-align:left;
+  vertical-align:middle;
+  line-height:1.15;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
-.data-table tbody td {
-  padding: 2px 5px;
-  border-bottom: 1px solid #f0f0f0;
-  vertical-align: middle;
-  white-space: nowrap;
+.sector-table thead th{
+  background:#f5f5f5;
+  font-weight:600;
+  color:#424242;
+  font-size:10px;
+  padding:1px 3px;
+  border-bottom:1px solid #ccc;
 }
-.data-table tbody tr:last-child td { border-bottom: none; }
+/* Column widths */
+.sector-table .col-tag{width:28px;text-align:center;}
+.sector-table .col-code{width:52px;}
+.sector-table .col-name{width:auto;}
+.sector-table .col-chg{width:56px;text-align:right;}
+.sector-table .col-rank{width:26px;text-align:center;}
+.sector-table .col-note{width:36px;text-align:center;}
 
-.col-type { width: 20px; text-align: center; font-size: 9px; color: #999; padding-left: 6px; }
-.col-code { width: 44px; font-family: monospace; font-size: 11px; }
-.col-name { font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.col-price { width: 52px; text-align: right; font-family: monospace; font-size: 11px; }
-.col-change { width: 44px; text-align: right; font-family: monospace; font-size: 11px; }
-.col-pct { width: 48px; text-align: right; font-family: monospace; font-size: 11px; font-weight: 600; }
+.sector-table tbody tr:nth-child(odd){background:#fafafa;}
+.sector-table tbody tr:nth-child(even){background:#fff;}
+.sector-table td.chg-red{color:#c62828;font-weight:700;}
+.sector-table td.chg-green{color:#2e7d32;font-weight:700;}
+.sector-table td.chg-gray{color:#757575;font-weight:700;}
+.sector-table .tag{font-size:9px;padding:0 2px;border:1px solid #ddd;font-weight:700;}
+.sector-table .tag.us{color:#b71c1c;background:#ffebee;border-color:#ef9a9a;}
+.sector-table .tag.a{color:#1565c0;background:#e3f2fd;border-color:#90caf9;}
 
-.tr-a { background: #fafafa; }
-.tr-a td { border-bottom-color: #ececec; }
+/* Flag before code for A-share */
+.sector-table .flag-a{color:#1565c0;font-weight:700;font-size:10px;}
+.sector-table .flag-us{color:#b71c1c;font-weight:700;font-size:10px;}
 
-/* ===== 底部 ===== */
-.footer {
-  font-size: 10px;
-  color: #999;
-  text-align: center;
-  padding: 6px 10px;
-  border-top: 1px solid #e0e0e0;
-}
-
-/* ===== 截图 overlay ===== */
-#overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  z-index: 9999;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  padding: 20px;
-}
-#preview {
-  width: 100%;
-  max-width: 400px;
-  background: #fff;
-  overflow: auto;
-  max-height: 80vh;
-}
-#preview img { width: 100%; display: block; }
-
-/* ===== 打印 ===== */
-@media print {
-  body { background: #fff; color: #000; }
-  .toolbar, .btn { display: none; }
-  .sector-block { break-inside: avoid; page-break-inside: avoid; }
+/* Section divider row in table (between US and A stocks) */
+.sector-table .divider td{
+  border-top:1px dashed #bbb;
+  padding:0;
+  height:1px;
+  background:transparent;
 }
 
-/* ===== 滚动条 ===== */
-::-webkit-scrollbar { width: 2px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #ccc; }
+/* A-shares note */
+.a-note{
+  font-size:9px;color:#757575;padding:1px 5px;
+  background:#f5f5f5;border-top:1px solid #e0e0e0;
+  text-align:right;
+}
+
+/* Footer / Export */
+.export-bar{
+  padding:4px 6px;
+  background:#fafafa;
+  border-top:1px solid #e0e0e0;
+  display:flex;gap:4px;justify-content:center;flex-wrap:wrap;
+}
+.export-bar button{
+  font-size:11px;padding:2px 10px;
+  border:1px solid #7f0000;background:#c62828;color:#fff;
+  cursor:pointer;font-weight:600;
+  height:22px;
+}
+
+/* Snapshot hidden */
+.hidden{display:none;}
 </style>
 </head>
 <body>
 
-<div id="capture-area">
-
-  <!-- 标题栏 -->
-  <div class="header">
-    <div class="header-title">美股-A股映射雷达</div>
-    <div class="header-sub">美股当夜涨跌 → A股次日指引</div>
-    <div class="header-meta" id="marketStatus"></div>
-  </div>
-
-  <!-- 指数映射 -->
-  <div class="index-section">
-    <div class="index-section-title">指数映射</div>
-    <div class="index-grid" id="indexGrid"></div>
-  </div>
-
-  <!-- 工具栏 -->
-  <div class="toolbar">
-    <input id="searchInput" type="text" placeholder="搜索板块 / 代码 / 名称">
-    <select id="filterSelect">
-      <option value="all">全部</option>
-      <option value="positive">利好</option>
-      <option value="neutral">中性</option>
-      <option value="negative">利空</option>
-    </select>
-    <button class="btn btn-primary" onclick="takeScreenshot()">📸 截图</button>
-    <button class="btn" onclick="window.print()">🖨️</button>
-  </div>
-
-  <!-- 统计摘要 -->
-  <div class="summary" id="summary"></div>
-
-  <!-- 板块列表 -->
-  <div class="main-content" id="sectorsList"></div>
-
-  <!-- 更新时间 -->
-  <div class="footer" id="footer"></div>
-
+<!-- Header -->
+<div class="page-header">
+  <h1>美股昨夜涨跌 &rarr; A股今日映射指引</h1>
+  <div class="sub">美股已收盘 / A股未开盘（前一日数据）</div>
+  <div class="dates" id="datesLine"></div>
 </div>
 
-<!-- 截图预览 -->
-<div id="overlay" onclick="if(event.target===this) this.style.display='none'">
-  <div id="preview"></div>
+<!-- Controls -->
+<div class="controls">
+  <input type="text" id="searchInput" placeholder="搜索标的/代码/板块...">
+  <select id="filterSelect">
+    <option value="all">全部映射</option>
+    <option value="up">▲ 映射利好</option>
+    <option value="neutral">— 映射中性</option>
+    <option value="down">▼ 映射利空</option>
+  </select>
+  <button onclick="doExport()">导出截图</button>
+</div>
+
+<!-- Summary -->
+<div class="summary-strip" id="summaryStrip"></div>
+
+<!-- Index Mapping -->
+<div class="index-map" id="indexMap"></div>
+
+<!-- Sector Grid -->
+<div class="sector-grid" id="sectorGrid"></div>
+
+<!-- Export bar -->
+<div class="export-bar">
+  <button onclick="doExport()">导出 PNG 截图</button>
 </div>
 
 <script>
-/* ===== 配置 ===== */
-const INDICES = [
-  { usTicker: '^SOX', usName: 'SOX', usLabel: '费城半导体', aCode: 'sh512480', aName: '半导体ETF', aLabel: '半导体' },
-  { usTicker: '^NDX', usName: 'NDX', usLabel: '纳指100', aCode: 'sz399006', aName: '创业板指', aLabel: '创业板' },
-  { usTicker: '^GSPC', usName: 'SPX', usLabel: '标普500', aCode: 'sh000300', aName: '沪深300', aLabel: '沪深300' },
-  { usTicker: '^DJI', usName: 'DJI', usLabel: '道琼斯', aCode: 'sh000001', aName: '上证指数', aLabel: '上证' },
-];
-
+/* ==================== Data ==================== */
 let DATA = null;
-let INDEX_CACHE = {};
-
-/* ===== 工具函数 ===== */
-const fmt = n => n == null || isNaN(n) ? '—' : (n > 0 ? '+' : '') + n.toFixed(2);
-const fmtPct = n => n == null || isNaN(n) ? '—' : (n > 0 ? '+' : '') + n.toFixed(2) + '%';
-const cls = n => n == null || isNaN(n) ? 'neutral' : n > 0 ? 'up' : n < 0 ? 'down' : 'neutral';
-const arrow = n => n == null || isNaN(n) ? '—' : n > 0 ? '▲' : n < 0 ? '▼' : '—';
-
-/* ===== 加载主数据 ===== */
-async function load() {
+async function loadData() {
   try {
     const r = await fetch('/api/data');
     DATA = await r.json();
     render();
-  } catch (e) {
-    console.error('主数据加载失败:', e);
-  }
+  } catch(e) { console.error('API Error:', e); }
 }
 
-/* ===== 加载指数数据（前端独立获取） ===== */
-async function loadIndices() {
-  // 优先使用后端返回的指数数据
-  if (DATA && DATA.indices) {
-    INDEX_CACHE = {};
-    for (const idx of INDICES) {
-      const us = DATA.indices[idx.usTicker];
-      const a = DATA.indices[idx.aCode];
-      if (us && us.status === 'ok') {
-        INDEX_CACHE[idx.usTicker] = { price: us.price, change: us.change, changePercent: us.changePercent };
-      }
-      if (a && a.status === 'ok') {
-        INDEX_CACHE[idx.aCode] = { price: a.price, change: a.change, changePercent: a.changePercent };
-      }
-    }
-    renderIndices();
-    return;
-  }
+/* ==================== Helpers ==================== */
+const fmtChg = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+const fmtNum = (n) => n.toFixed(2);
+const dirIcon = (d) => d === 'up' ? '▲' : d === 'down' ? '▼' : '—';
+const dirColor = (d) => d === 'up' ? 'c62828' : d === 'down' ? '2e7d32' : '757575';
+const dirClass = (d) => d > 0 ? 'chg-red' : d < 0 ? 'chg-green' : 'chg-gray';
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+const yesterdayStr = () => {
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
 
-  // Fallback: 前端独立获取
-  // 美股指数（Yahoo Finance）
-  for (const idx of INDICES) {
-    try {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(idx.usTicker)}?interval=1d&range=2d`;
-      const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-      const data = await r.json();
-      const result = data.chart?.result?.[0];
-      if (result) {
-        const close = result.indicators.quote[0].close;
-        if (close && close.length >= 2 && close[close.length-1] != null && close[close.length-2] != null) {
-          const cur = close[close.length-1];
-          const prev = close[close.length-2];
-          const change = cur - prev;
-          const pct = change / prev * 100;
-          INDEX_CACHE[idx.usTicker] = { price: cur, change, changePercent: pct };
-        }
-      }
-    } catch (e) { /* 静默失败 */ }
-  }
-
-  // A股指数（腾讯行情）
-  try {
-    const qlist = INDICES.map(i => i.aCode).join(',');
-    const url = `http://qt.gtimg.cn/q=${qlist}`;
-    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-    const text = await r.text();
-    for (const line of text.split(';')) {
-      const m = line.match(/v_(\w+)="(.+)"/);
-      if (!m) continue;
-      const fields = m[2].split('~');
-      if (fields.length < 5) continue;
-      const code = fields[2];
-      const price = parseFloat(fields[3]);
-      const prev = parseFloat(fields[4]);
-      if (isNaN(price) || isNaN(prev)) continue;
-      const change = price - prev;
-      const pct = prev ? (change / prev) * 100 : 0;
-      INDEX_CACHE[code] = { price, prevClose: prev, change, changePercent: pct };
-    }
-  } catch (e) { /* 静默失败 */ }
-
-  renderIndices();
-}
-
-
-/* ===== 渲染指数区域 ===== */
-function renderIndices() {
-  const grid = document.getElementById('indexGrid');
-  grid.innerHTML = INDICES.map(idx => {
-    const us = INDEX_CACHE[idx.usTicker] || {};
-    const a = INDEX_CACHE[idx.aCode] || {};
-    const usCls = cls(us.changePercent);
-    const aCls = cls(a.changePercent);
-    return `
-      <div class="index-cell">
-        <div class="index-us-label">${idx.usLabel}</div>
-        <div class="index-us-name">${idx.usName}</div>
-        <div class="index-us-value ${usCls}">${fmtPct(us.changePercent)}</div>
-        <div class="index-arrow">↔</div>
-        <div class="index-a-name">${idx.aLabel}</div>
-        <div class="index-a-value ${aCls}">${fmtPct(a.changePercent)}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-/* ===== 渲染主内容 ===== */
-function render() {
-  if (!DATA) return;
-
-  const m = DATA.marketStatus || {};
-  const timeStr = DATA.updatedAt ? new Date(DATA.updatedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-
-  // 市场状态
-  document.getElementById('marketStatus').innerHTML = `
-    <span><span class="status-dot ${m.isUSOpen ? 'status-open' : 'status-close'}"></span>${m.us || '美股'}</span>
-    <span><span class="status-dot ${m.isAOpen ? 'status-open' : 'status-close'}"></span>${m.a || 'A股'}</span>
-    <span>${timeStr || m.time || ''}</span>
+/* ==================== Render ==================== */
+function render(){
+  // Dates
+  const usDate = DATA.usDate || todayStr();
+  const aDate = DATA.aDate || yesterdayStr();
+  document.getElementById('datesLine').innerHTML = `
+    <span>美股：${usDate}（已收盘）</span>
+    <span>A股：${aDate}（前一日收盘）</span>
   `;
 
-  // 统计摘要
-  const s = DATA.sectors || [];
-  const pos = s.filter(x => x.guidance.level === 'strong_positive' || x.guidance.level === 'positive').length;
-  const neu = s.filter(x => x.guidance.level === 'neutral' || x.guidance.level === 'unknown').length;
-  const neg = s.filter(x => x.guidance.level === 'negative' || x.guidance.level === 'strong_negative').length;
-  document.getElementById('summary').innerHTML = [
-    { l: '利好', v: pos, c: 'up' },
-    { l: '中性', v: neu, c: 'neutral' },
-    { l: '利空', v: neg, c: 'down' }
-  ].map(x => `
-    <div class="summary-item">
-      <div class="summary-num ${x.c}">${x.v}</div>
-      <div class="summary-label">${x.l}</div>
-    </div>
-  `).join('');
+  // Summary
+  const counts = {up:0,neutral:0,down:0};
+  (DATA.sectors || []).forEach(s=>{counts[s.direction]++;});
+  document.getElementById('summaryStrip').innerHTML = `
+    <div class="chip up"><strong>▲ ${counts.up}</strong> 映射利好</div>
+    <div class="chip mid"><strong>— ${counts.neutral}</strong> 映射中性</div>
+    <div class="chip down"><strong>▼ ${counts.down}</strong> 映射利空</div>
+    <div class="chip">板块共 ${(DATA.sectors || []).length} 个</div>
+  `;
 
-  // 筛选
-  const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
-  const f = document.getElementById('filterSelect').value;
-  const filtered = s.filter(sector => {
-    const mq = !q ||
-      sector.name.toLowerCase().includes(q) ||
-      sector.nameEn.toLowerCase().includes(q) ||
-      sector.usLeaders.some(u => u.name.toLowerCase().includes(q) || u.ticker.toLowerCase().includes(q)) ||
-      sector.aTargets.some(a => a.name.toLowerCase().includes(q) || a.code.includes(q));
-    let mf = true;
-    if (f === 'positive') mf = sector.guidance.level === 'strong_positive' || sector.guidance.level === 'positive';
-    else if (f === 'neutral') mf = sector.guidance.level === 'neutral' || sector.guidance.level === 'unknown';
-    else if (f === 'negative') mf = sector.guidance.level === 'negative' || sector.guidance.level === 'strong_negative';
-    return mq && mf;
-  });
-
-  // 渲染板块
-  document.getElementById('sectorsList').innerHTML = filtered.map(sector => {
-    const wp = sector.usWeightedPct;
-    const wpStr = wp == null ? '—' : fmtPct(wp);
-    const wpCls = cls(wp);
-    const sigArrow = arrow(wp);
-
-    const rows = [];
-    // 美股龙头
-    for (const u of sector.usLeaders) {
-      const c = u.changePercent;
-      const hasErr = u.error || u.status !== 'ok';
-      rows.push(`
-        <tr class="tr-us">
-          <td class="col-type">美</td>
-          <td class="col-code">${u.ticker}</td>
-          <td class="col-name">${u.name}</td>
-          <td class="col-price">${hasErr ? '—' : (u.price != null ? u.price.toFixed(2) : '—')}</td>
-          <td class="col-change ${hasErr ? 'neutral' : cls(c)}">${hasErr ? '—' : fmt(c)}</td>
-          <td class="col-pct ${hasErr ? 'neutral' : cls(c)}">${hasErr ? '—' : fmtPct(c)}</td>
-        </tr>
-      `);
-    }
-    // A股映射
-    for (const a of sector.aTargets) {
-      const c = a.changePercent;
-      const hasErr = a.error || a.status !== 'ok';
-      rows.push(`
-        <tr class="tr-a">
-          <td class="col-type">A</td>
-          <td class="col-code">${a.code}</td>
-          <td class="col-name">${a.name}</td>
-          <td class="col-price">${hasErr ? '—' : (a.price != null ? a.price.toFixed(2) : '—')}</td>
-          <td class="col-change ${hasErr ? 'neutral' : cls(c)}">${hasErr ? '—' : fmt(c)}</td>
-          <td class="col-pct ${hasErr ? 'neutral' : cls(c)}">${hasErr ? '—' : fmtPct(c)}</td>
-        </tr>
-      `);
-    }
-
+  // Index map
+  const idxHtml = (DATA.indices || []).map(idx => {
+    const cls = idx.chg > 0 ? 'up' : idx.chg < 0 ? 'down' : '';
+    const arr = idx.chg > 0 ? '▲' : idx.chg < 0 ? '▼' : '—';
     return `
-      <div class="sector-block">
-        <div class="sector-header">
-          <div class="sector-name-row">
-            <span class="sector-arrow ${wpCls}">${sigArrow}</span>
-            <span class="sector-name">${sector.name}</span>
-          </div>
-          <div class="sector-pct ${wpCls}">${wpStr}</div>
-        </div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th class="col-type"></th>
-              <th class="col-code">代码</th>
-              <th class="col-name">名称</th>
-              <th class="col-price">价格</th>
-              <th class="col-change">涨跌</th>
-              <th class="col-pct">幅%</th>
-            </tr>
-          </thead>
-          <tbody>${rows.join('')}</tbody>
-        </table>
+      <div class="index-card">
+        <div class="pair">${idx.pair}</div>
+        <div class="name">${idx.desc}</div>
+        <div class="chg ${cls}">${arr} ${fmtChg(idx.chg)}</div>
       </div>
     `;
   }).join('');
+  document.getElementById('indexMap').innerHTML = idxHtml;
 
-  // 底部更新时间
-  const total = filtered.length;
-  document.getElementById('footer').textContent = `共 ${total} 个板块 · 数据更新时间 ${timeStr || m.time || '—'}`;
-}
+  // Sector grid
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filter = document.getElementById('filterSelect').value;
 
-/* ===== 截图导出 ===== */
-function takeScreenshot() {
-  const overlay = document.getElementById('overlay');
-  const preview = document.getElementById('preview');
-  overlay.style.display = 'none';
+  let filtered = (DATA.sectors || []);
+  if (filter !== 'all') filtered = filtered.filter(s => s.direction === filter);
+  if (search) {
+    filtered = filtered.filter(s => {
+      const hay = (s.name + ' ' + s.usStocks.map(x=>x.code+' '+x.name).join(' ') + ' ' + s.aStocks.map(x=>x.code+' '+x.name).join(' ')).toLowerCase();
+      return hay.includes(search);
+    });
+  }
 
-  html2canvas(document.getElementById('capture-area'), {
-    scale: 2,
-    useCORS: true,
-    logging: false,
-    backgroundColor: '#ffffff',
-    windowWidth: document.getElementById('capture-area').scrollWidth,
-    windowHeight: document.getElementById('capture-area').scrollHeight
-  }).then(canvas => {
-    overlay.style.display = 'flex';
-    const img = document.createElement('img');
-    img.src = canvas.toDataURL('image/png');
-    preview.innerHTML = '';
-    preview.appendChild(img);
+  const grid = document.getElementById('sectorGrid');
+  grid.innerHTML = '';
 
-    const dl = document.createElement('a');
-    dl.href = canvas.toDataURL('image/png');
-    dl.download = '美股A股雷达_' + new Date().toISOString().slice(0, 10) + '.png';
-    dl.style = 'display:block;text-align:center;margin-top:10px;padding:8px;background:#1a3a6c;color:#fff;text-decoration:none;font-size:13px;cursor:pointer;';
-    dl.innerText = '⬇️ 下载图片';
-    preview.appendChild(dl);
-  }).catch(err => {
-    console.error('截图失败:', err);
-    alert('截图失败，请尝试直接打印或截图');
+  filtered.forEach(sec => {
+    // Sort A-shares by changePercent desc
+    const sortedA = [...sec.aStocks].sort((a,b)=>b.chg - a.chg);
+
+    const dIcon = dirIcon(sec.direction);
+    const dColor = dirColor(sec.direction);
+    const wSign = sec.weightedChg >= 0 ? '+' : '';
+
+    const rows = [];
+    // US stocks
+    sec.usStocks.forEach((st,i) => {
+      rows.push(`
+        <tr>
+          <td class="col-tag"><span class="tag us">美</span></td>
+          <td class="col-code"><span class="flag-us">${st.code}</span></td>
+          <td class="col-name">${st.name}</td>
+          <td class="col-chg ${dirClass(st.chg)}">${fmtChg(st.chg)}</td>
+          <td class="col-note">—</td>
+        </tr>
+      `);
+    });
+    // Divider
+    if (sec.aStocks.length) {
+      rows.push(`<tr class="divider"><td colspan="5"></td></tr>`);
+    }
+    // A stocks sorted
+    sortedA.forEach((st, idx) => {
+      rows.push(`
+        <tr>
+          <td class="col-tag"><span class="tag a">A</span></td>
+          <td class="col-code"><span class="flag-a">${st.code}</span></td>
+          <td class="col-name">${st.name}</td>
+          <td class="col-chg ${dirClass(st.chg)}">${fmtChg(st.chg)}</td>
+          <td class="col-note" style="color:#b71c1c;font-weight:700">${idx+1}</td>
+        </tr>
+      `);
+    });
+
+    const block = document.createElement('div');
+    block.className = 'sector-block';
+    block.innerHTML = `
+      <div class="sector-header">
+        <span>${sec.name}</span>
+        <span class="right">
+          <span class="wchg">${wSign}${fmtNum(sec.weightedChg)}%</span>
+          <span class="mapdir" style="border-color:rgba(255,255,255,0.6)">${dIcon}</span>
+        </span>
+      </div>
+      <table class="sector-table">
+        <thead>
+          <tr>
+            <th class="col-tag">市</th>
+            <th class="col-code">代码</th>
+            <th class="col-name">名称</th>
+            <th class="col-chg">涨跌</th>
+            <th class="col-note">排</th>
+          </tr>
+        </thead>
+        <tbody>${rows.join('')}</tbody>
+      </table>
+      <div class="a-note">A股数据：${aDate} 前一日收盘</div>
+    `;
+    grid.appendChild(block);
   });
 }
 
-/* ===== 初始化 ===== */
-load();
-loadIndices();
-setInterval(() => { load(); loadIndices(); }, 30000);
+/* ==================== Export ==================== */
+function doExport(){
+  const btn = document.querySelectorAll('.export-bar button, .controls button');
+  const bars = document.querySelectorAll('.controls, .export-bar');
+  bars.forEach(b=>b.style.display='none');
+  document.body.style.margin='0';
 
+  html2canvas(document.body, {
+    backgroundColor: '#ffffff',
+    scale: 2,
+    useCORS: true,
+    allowTaint: false,
+    logging: false
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `美A映射_${todayStr()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    bars.forEach(b=>b.style.display='');
+  }).catch(err => {
+    console.error(err);
+    alert('导出失败，请重试');
+    bars.forEach(b=>b.style.display='');
+  });
+}
+
+/* ==================== Events ==================== */
 document.getElementById('searchInput').addEventListener('input', render);
 document.getElementById('filterSelect').addEventListener('change', render);
-</script>
 
+/* ==================== Init ==================== */
+loadData();
+setInterval(loadData, 30000);
+</script>
 </body>
 </html>
 '''

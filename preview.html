@@ -90,8 +90,8 @@ function fetchScript(url) {
   return new Promise((resolve) => {
     const s = document.createElement('script');
     s.src = url;
-    s.onload = () => { setTimeout(resolve, 100); };
-    s.onerror = () => { resolve(); };
+    s.onload = () => { setTimeout(resolve, 500); };
+    s.onerror = () => { setTimeout(resolve, 500); };
     document.head.appendChild(s);
   });
 }
@@ -101,7 +101,7 @@ async function fetchUSData() {
   for (const s of SECTORS) { for (const u of s.usLeaders) tickers.add('us' + u.ticker); }
   for (const idx of INDEX_CONFIG) tickers.add(idx.usTicker);
   const arr = [...tickers];
-  const BATCH = 40;
+  const BATCH = 60;
   for (let i = 0; i < arr.length; i += BATCH) {
     const batch = arr.slice(i, i + BATCH);
     await fetchScript('https://qt.gtimg.cn/q=' + batch.join(','));
@@ -124,7 +124,7 @@ async function fetchAData() {
   for (const s of SECTORS) { for (const a of s.aTargets) codes.add(a.market.toLowerCase() + a.code); }
   for (const idx of INDEX_CONFIG) codes.add(idx.aCode);
   const arr = [...codes];
-  const BATCH = 60;
+  const BATCH = 80;
   for (let i = 0; i < arr.length; i += BATCH) {
     const batch = arr.slice(i, i + BATCH);
     await fetchScript('https://qt.gtimg.cn/q=' + batch.join(','));

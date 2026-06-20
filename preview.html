@@ -106,7 +106,7 @@ async function fetchUSData() {
     const batch = arr.slice(i, i + BATCH);
     await fetchScript('https://qt.gtimg.cn/q=' + batch.join(','));
     for (const t of batch) {
-      const key = 'v_' + t.toLowerCase();
+      const key = 'v_' + t;
       if (window[key]) {
         const f = window[key].split('~');
         if (f.length >= 5 && f[3] && f[4]) {

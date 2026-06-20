@@ -29,11 +29,11 @@ body{font-size:8px;line-height:1;color:#1a1a1a;}
 .summary-strip .chip.down{color:#2e7d32;border-color:#c8e6c9;background:#e8f5e9;}
 .sector-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px 4px;}
 .sector-block{border:1px solid #ddd;background:#fff;border-radius:2px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
-.sector-header{display:flex;flex-direction:column;padding:2px 4px;background:#b71c1c;color:#fff;font-size:8px;font-weight:700;line-height:1.2;min-height:28px;}
-.sector-header .name{white-space:normal;overflow:visible;width:100%;}
-.sector-header .stats-line{display:flex;justify-content:flex-end;align-items:center;gap:3px;width:100%;margin-top:1px;}
-.sector-header .wchg{font-weight:700;font-size:8px;white-space:nowrap;}
-.sector-header .mapdir{font-weight:700;padding:0 2px;border:1px solid rgba(255,255,255,0.5);font-size:8px;min-width:14px;text-align:center;border-radius:1px;}
+.sector-header{display:flex;align-items:center;justify-content:space-between;padding:2px 3px;background:#b71c1c;color:#fff;font-size:7px;font-weight:700;line-height:1.1;min-height:16px;}
+.sector-header .name{white-space:nowrap;overflow:visible;flex:1;min-width:0;margin-right:2px;}
+.sector-header .right{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+.sector-header .wchg{font-weight:700;font-size:7px;white-space:nowrap;}
+.sector-header .mapdir{font-weight:700;padding:0 1px;border:1px solid rgba(255,255,255,0.5);font-size:7px;min-width:11px;text-align:center;border-radius:1px;}
 .sector-body{padding:2px 4px;}
 .us-section{font-size:7px;line-height:1.4;padding-bottom:2px;border-bottom:1px dashed #eee;margin-bottom:2px;}
 .us-title{color:#b71c1c;font-weight:700;font-size:7px;margin-bottom:1px;}
@@ -240,8 +240,8 @@ function render() {
     block.className = 'sector-block';
     block.innerHTML =
       '<div class="sector-header">' +
-        '<div class="name">' + sec.name + '</div>' +
-        '<div class="stats-line"><span class="wchg">' + wSign + fmtNum(sec.weightedChg) + '%</span><span class="mapdir">' + dIcon + '</span></div>' +
+        '<span class="name">' + sec.name + '</span>' +
+        '<span class="right"><span class="wchg">' + wSign + fmtNum(sec.weightedChg) + '%</span><span class="mapdir">' + dIcon + '</span></span>' +
       '</div>' +
       '<div class="sector-body">' +
         '<div class="us-section"><div class="us-title">美股</div><div>' + usItems + '</div></div>' +

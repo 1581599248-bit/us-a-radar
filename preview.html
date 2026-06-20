@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>美股-A股映射雷达站</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+/* ===== Reset & Base ===== */
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Microsoft YaHei,SimHei,sans-serif;}
+html,body{width:100%;min-height:100vh;background:#ffffff;}
+body{font-size:8px;line-height:1;color:#1a1a1a;}
+
+/* ===== Header ===== */
+.page-header{
+  background:linear-gradient(180deg,#b71c1c 0%,#8e0000 100%);
+  color:#fff;padding:3px 5px;text-align:center;border-bottom:2px solid #7f0000;
+}
+.page-header h1{font-size:13px;font-weight:700;letter-spacing:0.5px;margin:0;line-height:1.3;}
+.page-header .sub{font-size:8px;opacity:0.95;margin-top:1px;line-height:1.2;}
+.page-header .time-bar{
+  font-size:8px;margin-top:1px;opacity:0.9;
+  display:flex;justify-content:center;gap:8px;flex-wrap:wrap;line-height:1.2;
+}
+.page-header .time-bar span{
+  background:rgba(255,255,255,0.18);padding:1px 4px;border-radius:1px;white-space:nowrap;
+}
+.page-header .notice{
+  font-size:8px;margin-top:1px;opacity:0.85;color:#ffebee;font-weight:600;
+}
+
+/* ===== Index Bar ===== */
+.index-bar{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+  padding:2px 4px;background:#fafafa;border-bottom:1px solid #e0e0e0;
+}
+.index-card{
+  border:1px solid #e0e0e0;background:#fff;padding:2px 2px;text-align:center;
+}
+.index-card .pair{font-size:8px;font-weight:700;color:#b71c1c;line-height:1.1;}
+.index-card .name{font-size:7px;color:#616161;line-height:1.1;margin-top:1px;}
+.index-card .chg{font-size:8px;font-weight:700;line-height:1.1;margin-top:1px;}
+.index-card .chg.up{color:#c62828;}
+.index-card .chg.down{color:#2e7d32;}
+.index-card .a-chg{font-size:7px;color:#757575;line-height:1.1;margin-top:1px;}
+
+/* ===== Summary ===== */
+.summary-strip{
+  display:flex;gap:2px;padding:2px 4px;background:#fff;
+  border-bottom:1px solid #e0e0e0;font-size:8px;justify-content:center;flex-wrap:wrap;
+}
+.summary-strip .chip{
+  padding:1px 3px;border:1px solid #ddd;background:#fff;white-space:nowrap;border-radius:1px;
+}
+.summary-strip .chip strong{font-size:8px;}
+.summary-strip .chip.up{color:#c62828;border-color:#ffcdd2;background:#ffebee;}
+.summary-strip .chip.mid{color:#757575;border-color:#e0e0e0;background:#fafafa;}
+.summary-strip .chip.down{color:#2e7d32;border-color:#c8e6c9;background:#e8f5e9;}
+
+/* ===== Controls ===== */
+.controls{
+  display:flex;gap:2px;padding:2px 4px;background:#f5f5f5;
+  border-bottom:1px solid #e0e0e0;align-items:center;flex-wrap:wrap;
+}
+.controls input[type="text"]{
+  flex:1;min-width:50px;font-size:8px;padding:1px 2px;
+  border:1px solid #ccc;background:#fff;height:16px;
+}
+.controls select{
+  font-size:8px;padding:1px 2px;border:1px solid #ccc;background:#fff;height:16px;
+}
+.controls button{
+  font-size:8px;padding:1px 5px;
+  border:1px solid #7f0000;background:#c62828;color:#fff;
+  cursor:pointer;height:16px;font-weight:600;
+}
+
+/* ===== Sector Grid: 4 columns always (mobile + PC) ===== */
+.sector-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:2px;padding:2px 4px;
+}
+
+/* ===== Sector Block ===== */
+.sector-block{
+  border:1px solid #ddd;background:#fff;border-radius:2px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(0,0,0,0.05);
+}
+.sector-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1px 3px;background:#b71c1c;color:#fff;font-size:5px;font-weight:700;
+  line-height:1.2;min-height:12px;
+  letter-spacing:0.2px;
+}
+.sector-header .right{
+  display:flex;align-items:center;gap:3px;font-size:6px;font-weight:400;
+}
+.sector-header .wchg{font-weight:700;}
+.sector-header .mapdir{
+  font-weight:700;padding:0 2px;border:1px solid rgba(255,255,255,0.5);
+  font-size:6px;min-width:11px;text-align:center;
+}
+
+/* ===== Sector Body ===== */
+.sector-body{
+  padding:2px 4px;
+}
+
+/* US Row */
+.us-section{
+  font-size:6px;line-height:1.4;padding-bottom:2px;
+  border-bottom:1px dashed #eee;margin-bottom:2px;
+}
+.us-title{
+  color:#b71c1c;font-weight:700;font-size:6px;margin-bottom:1px;
+}
+.us-item{
+  display:inline-block;margin-right:3px;white-space:nowrap;
+}
+.us-ticker{color:#b71c1c;font-weight:700;}
+.us-name{color:#424242;}
+.us-chg{font-weight:700;font-size:6px;}
+.us-chg-up{color:#c62828;}
+.us-chg-down{color:#2e7d32;}
+
+/* A Row */
+.a-section{
+  font-size:7px;line-height:1.4;
+}
+.a-title{
+  color:#1565c0;font-weight:700;font-size:7px;margin-bottom:1px;
+}
+.a-list{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:0 4px;
+}
+.a-item{
+  white-space:nowrap;color:#333;font-size:7px;
+}
+
+/* Export Bar */
+.export-bar{
+  padding:2px 4px;background:#fafafa;border-top:1px solid #e0e0e0;
+  display:flex;gap:2px;justify-content:center;flex-wrap:wrap;
+}
+.export-bar button{
+  font-size:7px;padding:1px 6px;
+  border:1px solid #7f0000;background:#c62828;color:#fff;
+  cursor:pointer;font-weight:600;height:16px;
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="page-header">
+  <h1>美股昨夜涨跌 &rarr; A股今日映射指引</h1>
+  <div class="sub">美股已收盘（T-1） / A股尚未开盘（映射基于A股前一日收盘）</div>
+  <div class="time-bar" id="datesLine"></div>
+  <div class="notice" id="noticeLine">A股数据为前一日收盘，按前一日涨幅从高到低排列</div>
+</div>
+
+<!-- Index Mapping -->
+<div class="index-bar" id="indexBar"></div>
+
+<!-- Summary -->
+<div class="summary-strip" id="summaryStrip"></div>
+
+<!-- Controls -->
+<div class="controls" id="ctrlBar">
+  <input type="text" id="searchInput" placeholder="搜索标的/代码/板块...">
+  <select id="filterSelect">
+    <option value="all">全部映射</option>
+    <option value="up">▲ 映射利好</option>
+    <option value="neutral">— 映射中性</option>
+    <option value="down">▼ 映射利空</option>
+  </select>
+  <button onclick="doExport()">导出截图</button>
+</div>
+
+<!-- Sector Grid -->
+<div class="sector-grid" id="sectorGrid"></div>
+
+<!-- Export bar -->
+<div class="export-bar" id="exportBar">
+  <button onclick="doExport()">导出 PNG 截图</button>
+</div>
+
+<script>
+/* ==================== Data ==================== */
+let DATA = {"usDate": "2026-06-21", "aDate": "2026-06-21", "usLabel": "周五收盘", "aLabel": "周五收盘", "indices": [{"pair": "SOX <-> 科创50", "chg": 0.0, "aChg": 0.0, "desc": "费城半导体 vs A股科创50"}, {"pair": "NASDAQ <-> 创业板", "chg": 0.0, "aChg": 0.0, "desc": "纳斯达克 vs A股创业板"}, {"pair": "SPX <-> 沪深300", "chg": 0.0, "aChg": 0.0, "desc": "标普500 vs A股沪深300"}, {"pair": "DJI <-> 上证", "chg": 0.0, "aChg": 0.0, "desc": "道琼斯 vs A股上证"}], "sectors": [{"name": "光模块", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "COHR", "name": "Coherent / 相干", "chg": 0.0}, {"code": "MRVL", "name": "Marvell / 迈威尔", "chg": 0.0}, {"code": "LITE", "name": "Lumentum / 朗美通", "chg": 0.0}], "aStocks": [{"code": "300308", "market": "SZ", "name": "中际旭创", "chg": 0.0}, {"code": "300502", "market": "SZ", "name": "新易盛", "chg": 0.0}, {"code": "300394", "market": "SZ", "name": "天孚通信", "chg": 0.0}, {"code": "002281", "market": "SZ", "name": "光迅科技", "chg": 0.0}, {"code": "300548", "market": "SZ", "name": "博创科技", "chg": 0.0}, {"code": "603083", "market": "SH", "name": "剑桥科技", "chg": 0.0}, {"code": "300570", "market": "SZ", "name": "太辰光", "chg": 0.0}, {"code": "002902", "market": "SZ", "name": "铭普光磁", "chg": 0.0}, {"code": "688195", "market": "SH", "name": "腾景科技", "chg": 0.0}, {"code": "301205", "market": "SZ", "name": "联特科技", "chg": 0.0}]}, {"name": "GPU/算力芯片", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "NVDA", "name": "NVIDIA / 英伟达", "chg": 0.0}, {"code": "AMD", "name": "AMD / 超威", "chg": 0.0}, {"code": "INTC", "name": "Intel / 英特尔", "chg": 0.0}], "aStocks": [{"code": "300474", "market": "SZ", "name": "景嘉微", "chg": 0.0}, {"code": "688041", "market": "SH", "name": "海光信息", "chg": 0.0}, {"code": "688256", "market": "SH", "name": "寒武纪", "chg": 0.0}, {"code": "688047", "market": "SH", "name": "龙芯中科", "chg": 0.0}, {"code": "000818", "market": "SZ", "name": "航锦科技", "chg": 0.0}, {"code": "002729", "market": "SZ", "name": "好利科技", "chg": 0.0}, {"code": "688521", "market": "SH", "name": "芯原股份", "chg": 0.0}, {"code": "688107", "market": "SH", "name": "安路科技", "chg": 0.0}, {"code": "688262", "market": "SH", "name": "国芯科技", "chg": 0.0}, {"code": "300458", "market": "SZ", "name": "全志科技", "chg": 0.0}]}, {"name": "服务器/数据中心", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "DELL", "name": "Dell / 戴尔", "chg": 0.0}, {"code": "SMCI", "name": "Super Micro / 超微", "chg": 0.0}, {"code": "HPE", "name": "HPE / 慧与", "chg": 0.0}], "aStocks": [{"code": "000977", "market": "SZ", "name": "浪潮信息", "chg": 0.0}, {"code": "603019", "market": "SH", "name": "中科曙光", "chg": 0.0}, {"code": "601138", "market": "SH", "name": "工业富联", "chg": 0.0}, {"code": "000938", "market": "SZ", "name": "紫光股份", "chg": 0.0}, {"code": "000034", "market": "SZ", "name": "神州数码", "chg": 0.0}, {"code": "002261", "market": "SZ", "name": "拓维信息", "chg": 0.0}, {"code": "600756", "market": "SH", "name": "浪潮软件", "chg": 0.0}, {"code": "600845", "market": "SH", "name": "宝信软件", "chg": 0.0}, {"code": "688279", "market": "SH", "name": "峰岹科技", "chg": 0.0}, {"code": "603881", "market": "SH", "name": "数据港", "chg": 0.0}]}, {"name": "液冷", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "VRT", "name": "Vertiv / 维谛", "chg": 0.0}], "aStocks": [{"code": "002837", "market": "SZ", "name": "英维克", "chg": 0.0}, {"code": "300499", "market": "SZ", "name": "高澜股份", "chg": 0.0}, {"code": "301018", "market": "SZ", "name": "申菱环境", "chg": 0.0}, {"code": "300990", "market": "SZ", "name": "同飞股份", "chg": 0.0}, {"code": "603912", "market": "SH", "name": "佳力图", "chg": 0.0}, {"code": "002272", "market": "SZ", "name": "川润股份", "chg": 0.0}, {"code": "301128", "market": "SZ", "name": "强瑞技术", "chg": 0.0}, {"code": "300602", "market": "SZ", "name": "飞荣达", "chg": 0.0}, {"code": "300017", "market": "SZ", "name": "网宿科技", "chg": 0.0}, {"code": "300249", "market": "SZ", "name": "依米康", "chg": 0.0}]}, {"name": "PCB", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "TTMI", "name": "TTM / 迅达", "chg": 0.0}, {"code": "SANM", "name": "Sanmina / 新美亚", "chg": 0.0}], "aStocks": [{"code": "002463", "market": "SZ", "name": "沪电股份", "chg": 0.0}, {"code": "002916", "market": "SZ", "name": "深南电路", "chg": 0.0}, {"code": "600183", "market": "SH", "name": "生益科技", "chg": 0.0}, {"code": "603228", "market": "SH", "name": "景旺电子", "chg": 0.0}, {"code": "002938", "market": "SZ", "name": "鹏鼎控股", "chg": 0.0}, {"code": "002384", "market": "SZ", "name": "东山精密", "chg": 0.0}, {"code": "002436", "market": "SZ", "name": "兴森科技", "chg": 0.0}, {"code": "600601", "market": "SH", "name": "方正科技", "chg": 0.0}, {"code": "300739", "market": "SZ", "name": "明阳电路", "chg": 0.0}, {"code": "603936", "market": "SH", "name": "博敏电子", "chg": 0.0}]}, {"name": "CPO", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "AVGO", "name": "Broadcom / 博通", "chg": 0.0}, {"code": "MRVL", "name": "Marvell / 迈威尔", "chg": 0.0}, {"code": "COHR", "name": "Coherent / 相干", "chg": 0.0}, {"code": "INTC", "name": "Intel / 英特尔", "chg": 0.0}], "aStocks": [{"code": "300308", "market": "SZ", "name": "中际旭创", "chg": 0.0}, {"code": "300502", "market": "SZ", "name": "新易盛", "chg": 0.0}, {"code": "300394", "market": "SZ", "name": "天孚通信", "chg": 0.0}, {"code": "300548", "market": "SZ", "name": "博创科技", "chg": 0.0}, {"code": "002281", "market": "SZ", "name": "光迅科技", "chg": 0.0}, {"code": "300570", "market": "SZ", "name": "太辰光", "chg": 0.0}, {"code": "688205", "market": "SH", "name": "德科立", "chg": 0.0}, {"code": "688498", "market": "SH", "name": "源杰科技", "chg": 0.0}, {"code": "300620", "market": "SZ", "name": "光库科技", "chg": 0.0}, {"code": "688195", "market": "SH", "name": "腾景科技", "chg": 0.0}]}, {"name": "存储/内存", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "MU", "name": "Micron / 美光", "chg": 0.0}, {"code": "WDC", "name": "WDC / 西部数据", "chg": 0.0}, {"code": "STX", "name": "Seagate / 希捷", "chg": 0.0}, {"code": "PSTG", "name": "Pure Storage / 纯存储", "chg": 0.0}], "aStocks": [{"code": "603986", "market": "SH", "name": "兆易创新", "chg": 0.0}, {"code": "688525", "market": "SH", "name": "佰维存储", "chg": 0.0}, {"code": "301308", "market": "SZ", "name": "江波龙", "chg": 0.0}, {"code": "300223", "market": "SZ", "name": "北京君正", "chg": 0.0}, {"code": "688766", "market": "SH", "name": "普冉股份", "chg": 0.0}, {"code": "001309", "market": "SZ", "name": "德明利", "chg": 0.0}, {"code": "688110", "market": "SH", "name": "东芯股份", "chg": 0.0}, {"code": "688416", "market": "SH", "name": "恒烁股份", "chg": 0.0}, {"code": "300042", "market": "SZ", "name": "朗科科技", "chg": 0.0}, {"code": "300857", "market": "SZ", "name": "协创数据", "chg": 0.0}]}, {"name": "半导体设备", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "AMAT", "name": "AMAT / 应用材料", "chg": 0.0}, {"code": "LRCX", "name": "Lam / 泛林", "chg": 0.0}, {"code": "KLAC", "name": "KLA / 科磊", "chg": 0.0}, {"code": "ASML", "name": "ASML / 阿斯麦", "chg": 0.0}], "aStocks": [{"code": "002371", "market": "SZ", "name": "北方华创", "chg": 0.0}, {"code": "688012", "market": "SH", "name": "中微公司", "chg": 0.0}, {"code": "688072", "market": "SH", "name": "拓荆科技", "chg": 0.0}, {"code": "688037", "market": "SH", "name": "芯源微", "chg": 0.0}, {"code": "688120", "market": "SH", "name": "华海清科", "chg": 0.0}, {"code": "688082", "market": "SH", "name": "盛美上海", "chg": 0.0}, {"code": "603690", "market": "SH", "name": "至纯科技", "chg": 0.0}, {"code": "688409", "market": "SH", "name": "富创精密", "chg": 0.0}, {"code": "300604", "market": "SZ", "name": "长川科技", "chg": 0.0}, {"code": "688147", "market": "SH", "name": "微导纳米", "chg": 0.0}]}, {"name": "半导体材料/IC设计", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "TSM", "name": "TSMC / 台积电", "chg": 0.0}, {"code": "QCOM", "name": "Qualcomm / 高通", "chg": 0.0}, {"code": "NVDA", "name": "NVIDIA / 英伟达", "chg": 0.0}], "aStocks": [{"code": "688981", "market": "SH", "name": "中芯国际", "chg": 0.0}, {"code": "603501", "market": "SH", "name": "韦尔股份", "chg": 0.0}, {"code": "300782", "market": "SZ", "name": "卓胜微", "chg": 0.0}, {"code": "300661", "market": "SZ", "name": "圣邦股份", "chg": 0.0}, {"code": "688536", "market": "SH", "name": "思瑞浦", "chg": 0.0}, {"code": "688052", "market": "SH", "name": "纳芯微", "chg": 0.0}, {"code": "688798", "market": "SH", "name": "艾为电子", "chg": 0.0}, {"code": "688484", "market": "SH", "name": "南芯科技", "chg": 0.0}, {"code": "300672", "market": "SZ", "name": "国科微", "chg": 0.0}, {"code": "688385", "market": "SH", "name": "复旦微电", "chg": 0.0}]}, {"name": "封测", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "AMKR", "name": "Amkor / 安靠", "chg": 0.0}, {"code": "TER", "name": "Teradyne / 泰瑞达", "chg": 0.0}], "aStocks": [{"code": "600584", "market": "SH", "name": "长电科技", "chg": 0.0}, {"code": "002156", "market": "SZ", "name": "通富微电", "chg": 0.0}, {"code": "002185", "market": "SZ", "name": "华天科技", "chg": 0.0}, {"code": "688362", "market": "SH", "name": "甬矽电子", "chg": 0.0}, {"code": "603005", "market": "SH", "name": "晶方科技", "chg": 0.0}, {"code": "002077", "market": "SZ", "name": "大港股份", "chg": 0.0}, {"code": "688216", "market": "SH", "name": "气派科技", "chg": 0.0}, {"code": "688135", "market": "SH", "name": "利扬芯片", "chg": 0.0}, {"code": "603929", "market": "SH", "name": "亚翔集成", "chg": 0.0}, {"code": "688372", "market": "SH", "name": "伟测科技", "chg": 0.0}]}, {"name": "AI软件/大模型", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "MSFT", "name": "Microsoft / 微软", "chg": 0.0}, {"code": "GOOGL", "name": "Alphabet / 谷歌", "chg": 0.0}, {"code": "META", "name": "Meta / 脸书", "chg": 0.0}, {"code": "AMZN", "name": "Amazon / 亚马逊", "chg": 0.0}], "aStocks": [{"code": "300418", "market": "SZ", "name": "昆仑万维", "chg": 0.0}, {"code": "300364", "market": "SZ", "name": "中文在线", "chg": 0.0}, {"code": "002230", "market": "SZ", "name": "科大讯飞", "chg": 0.0}, {"code": "601360", "market": "SH", "name": "三六零", "chg": 0.0}, {"code": "688327", "market": "SH", "name": "云从科技", "chg": 0.0}, {"code": "300229", "market": "SZ", "name": "拓尔思", "chg": 0.0}, {"code": "002362", "market": "SZ", "name": "汉王科技", "chg": 0.0}, {"code": "300624", "market": "SZ", "name": "万兴科技", "chg": 0.0}, {"code": "688787", "market": "SH", "name": "海天瑞声", "chg": 0.0}, {"code": "688207", "market": "SH", "name": "格灵深瞳", "chg": 0.0}]}, {"name": "云计算", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "AMZN", "name": "Amazon / 亚马逊", "chg": 0.0}, {"code": "MSFT", "name": "Microsoft / 微软", "chg": 0.0}, {"code": "GOOGL", "name": "Alphabet / 谷歌", "chg": 0.0}, {"code": "CRM", "name": "Salesforce / 赛富时", "chg": 0.0}], "aStocks": [{"code": "688369", "market": "SH", "name": "金山云", "chg": 0.0}, {"code": "600588", "market": "SH", "name": "用友网络", "chg": 0.0}, {"code": "002410", "market": "SZ", "name": "广联达", "chg": 0.0}, {"code": "300454", "market": "SZ", "name": "深信服", "chg": 0.0}, {"code": "600756", "market": "SH", "name": "浪潮软件", "chg": 0.0}, {"code": "600845", "market": "SH", "name": "宝信软件", "chg": 0.0}, {"code": "002153", "market": "SZ", "name": "石基信息", "chg": 0.0}, {"code": "00268", "market": "HK", "name": "金蝶国际", "chg": 0.0}, {"code": "688316", "market": "SH", "name": "青云科技", "chg": 0.0}, {"code": "688158", "market": "SH", "name": "优刻得", "chg": 0.0}]}, {"name": "网络安全", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "PANW", "name": "Palo Alto / 帕洛", "chg": 0.0}, {"code": "CRWD", "name": "CrowdStrike / CrowdStrike", "chg": 0.0}, {"code": "FTNT", "name": "Fortinet / 飞塔", "chg": 0.0}, {"code": "ZS", "name": "Zscaler / Zscaler", "chg": 0.0}], "aStocks": [{"code": "300454", "market": "SZ", "name": "深信服", "chg": 0.0}, {"code": "002439", "market": "SZ", "name": "启明星辰", "chg": 0.0}, {"code": "300369", "market": "SZ", "name": "绿盟科技", "chg": 0.0}, {"code": "688561", "market": "SH", "name": "奇安信", "chg": 0.0}, {"code": "002212", "market": "SZ", "name": "天融信", "chg": 0.0}, {"code": "688023", "market": "SH", "name": "安恒信息", "chg": 0.0}, {"code": "002268", "market": "SZ", "name": "电科网安", "chg": 0.0}, {"code": "688225", "market": "SH", "name": "亚信安全", "chg": 0.0}, {"code": "300188", "market": "SZ", "name": "美亚柏科", "chg": 0.0}, {"code": "688030", "market": "SH", "name": "山石网科", "chg": 0.0}]}, {"name": "新能源/光伏/储能", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "FSLR", "name": "First Solar / 第一太阳能", "chg": 0.0}, {"code": "ENPH", "name": "Enphase / 恩菲斯", "chg": 0.0}, {"code": "SEDG", "name": "SolarEdge / 太阳边缘", "chg": 0.0}], "aStocks": [{"code": "300750", "market": "SZ", "name": "宁德时代", "chg": 0.0}, {"code": "002594", "market": "SZ", "name": "比亚迪", "chg": 0.0}, {"code": "601012", "market": "SH", "name": "隆基绿能", "chg": 0.0}, {"code": "600438", "market": "SH", "name": "通威股份", "chg": 0.0}, {"code": "688223", "market": "SH", "name": "晶科能源", "chg": 0.0}, {"code": "002459", "market": "SZ", "name": "晶澳科技", "chg": 0.0}, {"code": "688599", "market": "SH", "name": "天合光能", "chg": 0.0}, {"code": "300274", "market": "SZ", "name": "阳光电源", "chg": 0.0}, {"code": "002129", "market": "SZ", "name": "TCL中环", "chg": 0.0}, {"code": "688303", "market": "SH", "name": "大全能源", "chg": 0.0}]}, {"name": "动力电池", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "ALB", "name": "Albemarle / 雅宝", "chg": 0.0}, {"code": "SQM", "name": "SQM / 智利化工", "chg": 0.0}, {"code": "LTHM", "name": "Livent / 利文特", "chg": 0.0}], "aStocks": [{"code": "300750", "market": "SZ", "name": "宁德时代", "chg": 0.0}, {"code": "300014", "market": "SZ", "name": "亿纬锂能", "chg": 0.0}, {"code": "002074", "market": "SZ", "name": "国轩高科", "chg": 0.0}, {"code": "300207", "market": "SZ", "name": "欣旺达", "chg": 0.0}, {"code": "688567", "market": "SH", "name": "孚能科技", "chg": 0.0}, {"code": "300438", "market": "SZ", "name": "鹏辉能源", "chg": 0.0}, {"code": "688772", "market": "SH", "name": "珠海冠宇", "chg": 0.0}, {"code": "002245", "market": "SZ", "name": "蔚蓝锂芯", "chg": 0.0}, {"code": "002812", "market": "SZ", "name": "恩捷股份", "chg": 0.0}, {"code": "002709", "market": "SZ", "name": "天赐材料", "chg": 0.0}]}, {"name": "锂矿/锂盐", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "ALB", "name": "Albemarle / 雅宝", "chg": 0.0}, {"code": "SQM", "name": "SQM / 智利化工", "chg": 0.0}, {"code": "LTHM", "name": "Livent / 利文特", "chg": 0.0}, {"code": "LAC", "name": "Lithium Americas / 锂美", "chg": 0.0}], "aStocks": [{"code": "002466", "market": "SZ", "name": "天齐锂业", "chg": 0.0}, {"code": "002460", "market": "SZ", "name": "赣锋锂业", "chg": 0.0}, {"code": "000792", "market": "SZ", "name": "盐湖股份", "chg": 0.0}, {"code": "002240", "market": "SZ", "name": "盛新锂能", "chg": 0.0}, {"code": "002497", "market": "SZ", "name": "雅化集团", "chg": 0.0}, {"code": "002192", "market": "SZ", "name": "融捷股份", "chg": 0.0}, {"code": "002756", "market": "SZ", "name": "永兴材料", "chg": 0.0}, {"code": "002738", "market": "SZ", "name": "中矿资源", "chg": 0.0}, {"code": "000408", "market": "SZ", "name": "藏格矿业", "chg": 0.0}, {"code": "000762", "market": "SZ", "name": "西藏矿业", "chg": 0.0}]}, {"name": "智能电网/特高压", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "NEE", "name": "NextEra / 新纪元", "chg": 0.0}, {"code": "AEP", "name": "AEP / 美国电力", "chg": 0.0}, {"code": "DUK", "name": "Duke / 杜克能源", "chg": 0.0}, {"code": "SO", "name": "Southern / 南方", "chg": 0.0}], "aStocks": [{"code": "600406", "market": "SH", "name": "国电南瑞", "chg": 0.0}, {"code": "000400", "market": "SZ", "name": "许继电气", "chg": 0.0}, {"code": "600089", "market": "SH", "name": "特变电工", "chg": 0.0}, {"code": "600312", "market": "SH", "name": "平高电气", "chg": 0.0}, {"code": "601179", "market": "SH", "name": "中国西电", "chg": 0.0}, {"code": "002028", "market": "SZ", "name": "思源电气", "chg": 0.0}, {"code": "601126", "market": "SH", "name": "四方股份", "chg": 0.0}, {"code": "600131", "market": "SH", "name": "国网信通", "chg": 0.0}, {"code": "002452", "market": "SZ", "name": "长高电新", "chg": 0.0}, {"code": "600885", "market": "SH", "name": "宏发股份", "chg": 0.0}]}, {"name": "自动驾驶", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "TSLA", "name": "Tesla / 特斯拉", "chg": 0.0}, {"code": "MBLY", "name": "Mobileye / Mobileye", "chg": 0.0}, {"code": "AUR", "name": "Aurora / Aurora", "chg": 0.0}, {"code": "GOOGL", "name": "Alphabet / 谷歌", "chg": 0.0}], "aStocks": [{"code": "002920", "market": "SZ", "name": "德赛西威", "chg": 0.0}, {"code": "002906", "market": "SZ", "name": "华阳集团", "chg": 0.0}, {"code": "688326", "market": "SH", "name": "经纬恒润", "chg": 0.0}, {"code": "603596", "market": "SH", "name": "伯特利", "chg": 0.0}, {"code": "603197", "market": "SH", "name": "保隆科技", "chg": 0.0}, {"code": "600741", "market": "SH", "name": "华域汽车", "chg": 0.0}, {"code": "600699", "market": "SH", "name": "均胜电子", "chg": 0.0}, {"code": "603786", "market": "SH", "name": "科博达", "chg": 0.0}, {"code": "300496", "market": "SZ", "name": "中科创达", "chg": 0.0}, {"code": "688208", "market": "SH", "name": "道通科技", "chg": 0.0}]}, {"name": "机器人/人形机器人", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "TSLA", "name": "Tesla / 特斯拉", "chg": 0.0}, {"code": "TKR", "name": "Timken / 铁姆肯", "chg": 0.0}, {"code": "RBC", "name": "Regal Rexnord / 雷勃电气", "chg": 0.0}, {"code": "ST", "name": "Sensata / 森萨塔", "chg": 0.0}], "aStocks": [{"code": "688017", "market": "SH", "name": "绿的谐波", "chg": 0.0}, {"code": "603728", "market": "SH", "name": "鸣志电器", "chg": 0.0}, {"code": "002472", "market": "SZ", "name": "双环传动", "chg": 0.0}, {"code": "002747", "market": "SZ", "name": "埃斯顿", "chg": 0.0}, {"code": "300124", "market": "SZ", "name": "汇川技术", "chg": 0.0}, {"code": "601689", "market": "SH", "name": "拓普集团", "chg": 0.0}, {"code": "002050", "market": "SZ", "name": "三花智控", "chg": 0.0}, {"code": "300660", "market": "SZ", "name": "江苏雷利", "chg": 0.0}, {"code": "002896", "market": "SZ", "name": "中大力德", "chg": 0.0}, {"code": "301368", "market": "SZ", "name": "丰立智能", "chg": 0.0}]}, {"name": "汽车整车", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "TSLA", "name": "Tesla / 特斯拉", "chg": 0.0}, {"code": "F", "name": "Ford / 福特", "chg": 0.0}, {"code": "GM", "name": "GM / 通用", "chg": 0.0}, {"code": "RIVN", "name": "Rivian / Rivian", "chg": 0.0}], "aStocks": [{"code": "002594", "market": "SZ", "name": "比亚迪", "chg": 0.0}, {"code": "000625", "market": "SZ", "name": "长安汽车", "chg": 0.0}, {"code": "601633", "market": "SH", "name": "长城汽车", "chg": 0.0}, {"code": "600104", "market": "SH", "name": "上汽集团", "chg": 0.0}, {"code": "601238", "market": "SH", "name": "广汽集团", "chg": 0.0}, {"code": "600418", "market": "SH", "name": "江淮汽车", "chg": 0.0}, {"code": "601127", "market": "SH", "name": "赛力斯", "chg": 0.0}, {"code": "600733", "market": "SH", "name": "北汽蓝谷", "chg": 0.0}, {"code": "600066", "market": "SH", "name": "宇通客车", "chg": 0.0}, {"code": "000572", "market": "SZ", "name": "海马汽车", "chg": 0.0}]}, {"name": "医疗器械", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "ISRG", "name": "Intuitive / 直觉", "chg": 0.0}, {"code": "BDX", "name": "Becton / 贝克顿", "chg": 0.0}, {"code": "SYK", "name": "Stryker / 史赛克", "chg": 0.0}, {"code": "ABT", "name": "Abbott / 雅培", "chg": 0.0}], "aStocks": [{"code": "300760", "market": "SZ", "name": "迈瑞医疗", "chg": 0.0}, {"code": "688617", "market": "SH", "name": "惠泰医疗", "chg": 0.0}, {"code": "688271", "market": "SH", "name": "联影医疗", "chg": 0.0}, {"code": "002223", "market": "SZ", "name": "鱼跃医疗", "chg": 0.0}, {"code": "300003", "market": "SZ", "name": "乐普医疗", "chg": 0.0}, {"code": "300832", "market": "SZ", "name": "新产业", "chg": 0.0}, {"code": "603658", "market": "SH", "name": "安图生物", "chg": 0.0}, {"code": "300595", "market": "SZ", "name": "欧普康视", "chg": 0.0}, {"code": "300633", "market": "SZ", "name": "开立医疗", "chg": 0.0}, {"code": "688029", "market": "SH", "name": "南微医学", "chg": 0.0}]}, {"name": "创新药", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "LLY", "name": "Eli Lilly / 礼来", "chg": 0.0}, {"code": "JNJ", "name": "J&J / 强生", "chg": 0.0}, {"code": "PFE", "name": "Pfizer / 辉瑞", "chg": 0.0}, {"code": "NVO", "name": "Novo Nordisk / 诺和诺德", "chg": 0.0}], "aStocks": [{"code": "600276", "market": "SH", "name": "恒瑞医药", "chg": 0.0}, {"code": "688235", "market": "SH", "name": "百济神州", "chg": 0.0}, {"code": "01801", "market": "HK", "name": "信达生物", "chg": 0.0}, {"code": "688331", "market": "SH", "name": "荣昌生物", "chg": 0.0}, {"code": "300558", "market": "SZ", "name": "贝达药业", "chg": 0.0}, {"code": "09926", "market": "HK", "name": "康方生物", "chg": 0.0}, {"code": "00013", "market": "HK", "name": "和黄医药", "chg": 0.0}, {"code": "09688", "market": "HK", "name": "再鼎医药", "chg": 0.0}, {"code": "06855", "market": "HK", "name": "亚盛医药", "chg": 0.0}, {"code": "688177", "market": "SH", "name": "百奥泰", "chg": 0.0}]}, {"name": "铜/资源", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "SCCO", "name": "Southern Copper / 南方铜业", "chg": 0.0}, {"code": "FCX", "name": "Freeport / 自由港", "chg": 0.0}, {"code": "BHP", "name": "BHP / 必和必拓", "chg": 0.0}, {"code": "RIO", "name": "Rio Tinto / 力拓", "chg": 0.0}], "aStocks": [{"code": "600362", "market": "SH", "name": "江西铜业", "chg": 0.0}, {"code": "000630", "market": "SZ", "name": "铜陵有色", "chg": 0.0}, {"code": "000878", "market": "SZ", "name": "云南铜业", "chg": 0.0}, {"code": "603993", "market": "SH", "name": "洛阳钼业", "chg": 0.0}, {"code": "601899", "market": "SH", "name": "紫金矿业", "chg": 0.0}, {"code": "601600", "market": "SH", "name": "中国铝业", "chg": 0.0}, {"code": "601168", "market": "SH", "name": "西部矿业", "chg": 0.0}, {"code": "600497", "market": "SH", "name": "驰宏锌锗", "chg": 0.0}, {"code": "000960", "market": "SZ", "name": "锡业股份", "chg": 0.0}, {"code": "601958", "market": "SH", "name": "金钼股份", "chg": 0.0}]}, {"name": "消费/白酒", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "KO", "name": "Coca-Cola / 可口可乐", "chg": 0.0}, {"code": "PEP", "name": "Pepsi / 百事", "chg": 0.0}, {"code": "MCD", "name": "McDonald's / 麦当劳", "chg": 0.0}, {"code": "SBUX", "name": "Starbucks / 星巴克", "chg": 0.0}], "aStocks": [{"code": "600519", "market": "SH", "name": "贵州茅台", "chg": 0.0}, {"code": "000858", "market": "SZ", "name": "五粮液", "chg": 0.0}, {"code": "000568", "market": "SZ", "name": "泸州老窖", "chg": 0.0}, {"code": "600809", "market": "SH", "name": "山西汾酒", "chg": 0.0}, {"code": "002304", "market": "SZ", "name": "洋河股份", "chg": 0.0}, {"code": "000596", "market": "SZ", "name": "古井贡酒", "chg": 0.0}, {"code": "600702", "market": "SH", "name": "舍得酒业", "chg": 0.0}, {"code": "600779", "market": "SH", "name": "水井坊", "chg": 0.0}, {"code": "603369", "market": "SH", "name": "今世缘", "chg": 0.0}, {"code": "603198", "market": "SH", "name": "迎驾贡酒", "chg": 0.0}]}, {"name": "黄金/贵金属", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "NEM", "name": "Newmont / 纽蒙特", "chg": 0.0}, {"code": "GOLD", "name": "Barrick / 巴里克", "chg": 0.0}, {"code": "AEM", "name": "Agnico / AEM", "chg": 0.0}, {"code": "KGC", "name": "Kinross / 金罗斯", "chg": 0.0}], "aStocks": [{"code": "600547", "market": "SH", "name": "山东黄金", "chg": 0.0}, {"code": "600489", "market": "SH", "name": "中金黄金", "chg": 0.0}, {"code": "600988", "market": "SH", "name": "赤峰黄金", "chg": 0.0}, {"code": "002155", "market": "SZ", "name": "湖南黄金", "chg": 0.0}, {"code": "601899", "market": "SH", "name": "紫金矿业", "chg": 0.0}, {"code": "000975", "market": "SZ", "name": "银泰黄金", "chg": 0.0}, {"code": "01818", "market": "HK", "name": "招金矿业", "chg": 0.0}, {"code": "001337", "market": "SZ", "name": "四川黄金", "chg": 0.0}, {"code": "601020", "market": "SH", "name": "华钰矿业", "chg": 0.0}, {"code": "601069", "market": "SH", "name": "西部黄金", "chg": 0.0}]}, {"name": "通信运营商", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "T", "name": "AT&T / 美国电话", "chg": 0.0}, {"code": "VZ", "name": "Verizon / 威瑞森", "chg": 0.0}, {"code": "TMUS", "name": "T-Mobile / T-Mobile", "chg": 0.0}, {"code": "CHTR", "name": "Charter / 特许", "chg": 0.0}], "aStocks": [{"code": "600941", "market": "SH", "name": "中国移动", "chg": 0.0}, {"code": "601728", "market": "SH", "name": "中国电信", "chg": 0.0}, {"code": "600050", "market": "SH", "name": "中国联通", "chg": 0.0}, {"code": "000063", "market": "SZ", "name": "中兴通讯", "chg": 0.0}, {"code": "600487", "market": "SH", "name": "亨通光电", "chg": 0.0}, {"code": "600522", "market": "SH", "name": "中天科技", "chg": 0.0}, {"code": "600498", "market": "SH", "name": "烽火通信", "chg": 0.0}, {"code": "601869", "market": "SH", "name": "长飞光纤", "chg": 0.0}, {"code": "300308", "market": "SZ", "name": "中际旭创", "chg": 0.0}, {"code": "603236", "market": "SH", "name": "移远通信", "chg": 0.0}]}, {"name": "金融科技/SaaS", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "V", "name": "Visa / 维萨", "chg": 0.0}, {"code": "PYPL", "name": "PayPal / 贝宝", "chg": 0.0}, {"code": "AFRM", "name": "Affirm / Affirm", "chg": 0.0}, {"code": "SOFI", "name": "SoFi / SoFi", "chg": 0.0}], "aStocks": [{"code": "300033", "market": "SZ", "name": "同花顺", "chg": 0.0}, {"code": "300059", "market": "SZ", "name": "东方财富", "chg": 0.0}, {"code": "600570", "market": "SH", "name": "恒生电子", "chg": 0.0}, {"code": "300803", "market": "SZ", "name": "指南针", "chg": 0.0}, {"code": "300085", "market": "SZ", "name": "银之杰", "chg": 0.0}, {"code": "688318", "market": "SH", "name": "财富趋势", "chg": 0.0}, {"code": "601519", "market": "SH", "name": "大智慧", "chg": 0.0}, {"code": "600446", "market": "SH", "name": "金证股份", "chg": 0.0}, {"code": "603383", "market": "SH", "name": "顶点软件", "chg": 0.0}, {"code": "300663", "market": "SZ", "name": "科蓝软件", "chg": 0.0}]}, {"name": "消费电子/苹果链", "weightedChg": 0.0, "direction": "neutral", "usStocks": [{"code": "AAPL", "name": "Apple / 苹果", "chg": 0.0}, {"code": "QCOM", "name": "Qualcomm / 高通", "chg": 0.0}, {"code": "SWKS", "name": "Skyworks / 思佳讯", "chg": 0.0}, {"code": "CRUS", "name": "Cirrus / 凌云", "chg": 0.0}], "aStocks": [{"code": "002475", "market": "SZ", "name": "立讯精密", "chg": 0.0}, {"code": "002241", "market": "SZ", "name": "歌尔股份", "chg": 0.0}, {"code": "300433", "market": "SZ", "name": "蓝思科技", "chg": 0.0}, {"code": "002600", "market": "SZ", "name": "领益智造", "chg": 0.0}, {"code": "601231", "market": "SH", "name": "环旭电子", "chg": 0.0}, {"code": "300115", "market": "SZ", "name": "长盈精密", "chg": 0.0}, {"code": "002938", "market": "SZ", "name": "鹏鼎控股", "chg": 0.0}, {"code": "002384", "market": "SZ", "name": "东山精密", "chg": 0.0}, {"code": "002273", "market": "SZ", "name": "水晶光电", "chg": 0.0}, {"code": "002635", "market": "SZ", "name": "安洁科技", "chg": 0.0}]}]};
+function loadData() { render(); }
+
+/* ==================== Helpers ==================== */
+const fmtChg = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+const fmtNum = (n) => n.toFixed(2);
+const dirIcon = (d) => d === 'up' ? '▲' : d === 'down' ? '▼' : '—';
+const dirColor = (d) => d === 'up' ? 'c62828' : d === 'down' ? '2e7d32' : '757575';
+const dirClass = (d) => d > 0 ? 'chg-red' : d < 0 ? 'chg-green' : 'chg-gray';
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+const yesterdayStr = () => {
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+
+/* ==================== Render ==================== */
+function render(){
+  if(!DATA) return;
+  const usDate = DATA.usDate || todayStr();
+  const aDate = DATA.aDate || yesterdayStr();
+  const usLabel = DATA.usLabel || "已收盘";
+  const aLabel = DATA.aLabel || "前一日收盘";
+
+  // Dates
+  document.getElementById('datesLine').innerHTML = `
+    <span>美股${usLabel} · ${usDate}</span>
+    <span>A股${aLabel} · ${aDate}</span>
+  `;
+
+  // Notice
+  const isWeekend = usLabel === '周五收盘';
+  document.getElementById('noticeLine').innerHTML = isWeekend
+    ? '周末休市 | 美股/A股数据均为周五收盘，按涨幅从高到低排列'
+    : 'A股尚未开盘，数据按前一日收盘从高到低排列';
+
+  // Indices
+  const idxHtml = (DATA.indices || []).map(idx => {
+    const cls = idx.chg > 0 ? 'up' : idx.chg < 0 ? 'down' : '';
+    const arr = idx.chg > 0 ? '▲' : idx.chg < 0 ? '▼' : '—';
+    const aCls = idx.aChg > 0 ? 'up' : idx.aChg < 0 ? 'down' : '';
+    const aArr = idx.aChg > 0 ? '▲' : idx.aChg < 0 ? '▼' : '—';
+    return `
+      <div class="index-card">
+        <div class="pair">${idx.pair}</div>
+        <div class="name">${idx.desc}</div>
+        <div class="chg ${cls}">${arr} ${fmtChg(idx.chg)}</div>
+        <div class="a-chg ${aCls}">A股前日 ${aArr}${fmtChg(idx.aChg)}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('indexBar').innerHTML = idxHtml;
+
+  // Summary
+  const counts = {up:0,neutral:0,down:0};
+  (DATA.sectors || []).forEach(s=>{counts[s.direction]++;});
+  document.getElementById('summaryStrip').innerHTML = `
+    <div class="chip up"><strong>▲ ${counts.up}</strong> 映射利好</div>
+    <div class="chip mid"><strong>— ${counts.neutral}</strong> 映射中性</div>
+    <div class="chip down"><strong>▼ ${counts.down}</strong> 映射利空</div>
+    <div class="chip">板块共 ${(DATA.sectors || []).length} 个</div>
+    <div class="chip" style="color:#b71c1c;font-weight:700">A股数据为前一日收盘</div>
+  `;
+
+  // Sectors
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filter = document.getElementById('filterSelect').value;
+
+  let filtered = (DATA.sectors || []);
+  if(filter !== 'all') filtered = filtered.filter(s => s.direction === filter);
+  if(search) {
+    filtered = filtered.filter(s => {
+      const hay = (s.name + ' ' + s.usStocks.map(x=>x.code+' '+x.name).join(' ') + ' ' + s.aStocks.map(x=>x.code+' '+x.name).join(' ')).toLowerCase();
+      return hay.includes(search);
+    });
+  }
+
+  const grid = document.getElementById('sectorGrid');
+  grid.innerHTML = '';
+
+  filtered.forEach(sec => {
+    const dIcon = dirIcon(sec.direction);
+    const wSign = sec.weightedChg >= 0 ? '+' : '';
+
+    // US stocks: ticker·name(change)
+    const usItems = sec.usStocks.map(st => {
+      const chgCls = st.chg > 0 ? 'us-chg-up' : st.chg < 0 ? 'us-chg-down' : '';
+      return `<span class="us-item"><span class="us-ticker">${st.code}</span><span class="us-name">${st.name.split(' / ')[1] || st.name}</span><span class="us-chg ${chgCls}">${fmtChg(st.chg)}</span></span>`;
+    }).join('');
+
+    // A stocks: just names (no codes, no changes)
+    const aItems = sec.aStocks.map(st => {
+      return `<span class="a-item">${st.name}</span>`;
+    }).join('');
+
+    const block = document.createElement('div');
+    block.className = 'sector-block';
+    block.innerHTML = `
+      <div class="sector-header">
+        <span>${sec.name}</span>
+        <span class="right">
+          <span class="wchg">${wSign}${fmtNum(sec.weightedChg)}%</span>
+          <span class="mapdir" style="border-color:rgba(255,255,255,0.6)">${dIcon}</span>
+        </span>
+      </div>
+      <div class="sector-body">
+        <div class="us-section">
+          <div class="us-title">美股</div>
+          <div class="us-list">${usItems}</div>
+        </div>
+        <div class="a-section">
+          <div class="a-title">A股映射</div>
+          <div class="a-list">${aItems}</div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(block);
+  });
+}
+
+/* ==================== Export ==================== */
+function doExport(){
+  const bars = document.querySelectorAll('.controls, .export-bar');
+  bars.forEach(b=>b.style.display='none');
+  document.body.style.margin='0';
+
+  html2canvas(document.body, {
+    backgroundColor: '#ffffff',
+    scale: 2,
+    useCORS: true,
+    allowTaint: false,
+    logging: false
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `美A映射_${todayStr()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    bars.forEach(b=>b.style.display='');
+  }).catch(err => {
+    console.error(err);
+    alert('导出失败，请重试');
+    bars.forEach(b=>b.style.display='');
+  });
+}
+
+/* ==================== Events ==================== */
+document.getElementById('searchInput').addEventListener('input', render);
+document.getElementById('filterSelect').addEventListener('change', render);
+
+/* ==================== Init ==================== */
+loadData();
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>

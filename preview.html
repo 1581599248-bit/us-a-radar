@@ -76,8 +76,8 @@ const INDEX_CONFIG = [
 {usTicker:"usDJI",usName:"DJI",usLabel:"道琼斯",aCode:"sh000001",aName:"上证指数",aLabel:"上证"}
 ];
 
-const usData = {};
-const aData = {};
+var usData = {};
+var aData = {};
 
 const fmtChg = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
 const fmtNum = (n) => n.toFixed(2);
@@ -156,7 +156,7 @@ function render() {
   document.getElementById('datesLine').innerHTML = '<span>美股' + usLabel + ' · ' + usDate + '</span><span>A股' + aLabel + ' · ' + aDate + '</span>';
 
   const idxHtml = INDEX_CONFIG.map(idx => {
-    const u = usData[idx.usTicker] || {};
+    const u = usData[idx.usTicker.startsWith('us') ? idx.usTicker.slice(2) : idx.usTicker] || {};
     const a = aData[idx.aCode] || {};
     const uChg = u.chg || 0;
     const aChg = a.chg || 0;

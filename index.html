@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>美股-A股映射雷达站</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Microsoft YaHei,SimHei,sans-serif;}
+html,body{width:100%;min-height:100vh;background:#fff;}
+body{font-size:8px;line-height:1;color:#1a1a1a;}
+.page-header{background:linear-gradient(180deg,#b71c1c 0%,#8e0000 100%);color:#fff;padding:3px 5px;text-align:center;border-bottom:2px solid #7f0000;}
+.page-header h1{font-size:13px;font-weight:700;margin:0;line-height:1.3;}
+.page-header .sub{font-size:8px;opacity:0.95;margin-top:1px;}
+.page-header .time-bar{font-size:8px;margin-top:1px;opacity:0.9;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+.page-header .time-bar span{background:rgba(255,255,255,0.18);padding:1px 4px;border-radius:1px;}
+.index-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px 4px;background:#fafafa;border-bottom:1px solid #e0e0e0;}
+.index-card{border:1px solid #e0e0e0;background:#fff;padding:2px 2px;text-align:center;}
+.index-card .pair{font-size:8px;font-weight:700;color:#b71c1c;line-height:1.1;}
+.index-card .name{font-size:7px;color:#616161;line-height:1.1;margin-top:1px;}
+.index-card .chg{font-size:8px;font-weight:700;line-height:1.1;margin-top:1px;}
+.index-card .chg.up{color:#c62828;}
+.index-card .chg.down{color:#2e7d32;}
+.index-card .a-chg{font-size:7px;color:#757575;line-height:1.1;margin-top:1px;}
+.summary-strip{display:flex;gap:2px;padding:2px 4px;background:#fff;border-bottom:1px solid #e0e0e0;font-size:8px;justify-content:center;flex-wrap:wrap;}
+.summary-strip .chip{padding:1px 3px;border:1px solid #ddd;background:#fff;white-space:nowrap;border-radius:1px;}
+.summary-strip .chip.up{color:#c62828;border-color:#ffcdd2;background:#ffebee;}
+.summary-strip .chip.mid{color:#757575;border-color:#e0e0e0;background:#fafafa;}
+.summary-strip .chip.down{color:#2e7d32;border-color:#c8e6c9;background:#e8f5e9;}
+.note-bar{text-align:center;padding:2px 4px;background:#fff;border-bottom:1px solid #e0e0e0;font-size:7px;color:#616161;}
+.sector-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px 4px;}
+.sector-block{border:1px solid #ddd;background:#fff;border-radius:2px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
+.sector-header{display:flex;align-items:center;justify-content:space-between;padding:1px 2px;background:#b71c1c;color:#fff;font-size:6px;font-weight:700;line-height:1.2;min-height:12px;}
+.sector-header .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;margin-right:2px;}
+.sector-header .right{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+.sector-header .wchg{font-weight:700;font-size:6px;white-space:nowrap;}
+.sector-header .mapdir{font-weight:700;padding:0 1px;border:1px solid rgba(255,255,255,0.5);font-size:6px;min-width:11px;text-align:center;border-radius:1px;}
+.sector-body{padding:2px 4px;}
+.us-section{font-size:7px;line-height:1.4;padding-bottom:2px;border-bottom:1px dashed #eee;margin-bottom:2px;}
+.us-title{color:#b71c1c;font-weight:700;font-size:7px;margin-bottom:1px;}
+.us-item{display:inline-block;margin-right:3px;white-space:nowrap;}
+.us-ticker{color:#b71c1c;font-weight:700;}
+.us-name{color:#424242;}
+.us-chg{font-weight:700;font-size:7px;}
+.us-chg-up{color:#c62828;}
+.us-chg-down{color:#2e7d32;}
+.a-section{font-size:7px;line-height:1.4;}
+.a-title{color:#1565c0;font-weight:700;font-size:7px;margin-bottom:1px;}
+.a-list{display:grid;grid-template-columns:repeat(2,1fr);gap:0 4px;}
+.a-item{white-space:nowrap;color:#333;font-size:7px;}
+.loading{text-align:center;padding:20px;font-size:12px;color:#999;}
+.error{text-align:center;padding:20px;font-size:10px;color:#c62828;}
+.export-btn{position:fixed;bottom:10px;right:10px;z-index:999;padding:6px 12px;background:#b71c1c;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="page-header" id="pageHeader">
+<h1>美股昨夜涨跌 → A股今日映射指引</h1>
+<div class="sub" id="subLine">加载中...</div>
+<div class="time-bar" id="datesLine"></div>
+</div>
+
+<div class="index-bar" id="indexBar"></div>
+<div class="note-bar" id="noteBar">板块涨跌幅为该板块美股前十龙头加权平均丨 A股映射标的不构成投资建议</div>
+<div class="summary-strip" id="summaryStrip"></div>
+<div class="loading" id="loading">正在加载实时数据...</div>
+<div class="sector-grid" id="sectorGrid" style="display:none"></div>
+<button class="export-btn" onclick="doExport()">📷 导出 JPG</button>
+
+<script>
+const SECTORS = [{"id":"gpu","name":"GPU","sectorIndex":"usSOXX","usLeaders":[{"ticker":"NVDA","name":"英伟达","weight":0.4247},{"ticker":"AMD","name":"AMD","weight":0.1168},{"ticker":"AVGO","name":"博通","weight":0.0993},{"ticker":"ARM","name":"Arm","weight":0.0592},{"ticker":"MRVL","name":"迈威尔","weight":0.0778},{"ticker":"QCOM","name":"高通","weight":0.0722},{"ticker":"INTC","name":"英特尔","weight":0.05},{"ticker":"ALAB","name":"Astera","weight":0.0444},{"ticker":"LSCC","name":"莱迪思","weight":0.0296},{"ticker":"RMBS","name":"Rambus","weight":0.0259}],"aTargets":[{"code":"688795","market":"SH","name":"摩尔线程","weight":1},{"code":"688802","market":"SH","name":"沐曦股份","weight":0.9},{"code":"688256","market":"SH","name":"寒武纪","weight":0.8},{"code":"688041","market":"SH","name":"海光信息","weight":0.7},{"code":"300474","market":"SZ","name":"景嘉微","weight":0.6},{"code":"06082","market":"HK","name":"壁仞科技","weight":0.5},{"code":"09903","market":"HK","name":"天数智芯","weight":0.5},{"code":"000818","market":"SZ","name":"航锦科技","weight":0.4},{"code":"688521","market":"SH","name":"芯原股份","weight":0.4},{"code":"300458","market":"SZ","name":"全志科技","weight":0.4}]},{"id":"cpo","name":"CPO","sectorIndex":"usXSD","usLeaders":[{"ticker":"AVGO","name":"博通","weight":0.18},{"ticker":"COHR","name":"高意","weight":0.17},{"ticker":"LITE","name":"鲁门特姆","weight":0.16},{"ticker":"MRVL","name":"迈威尔","weight":0.15},{"ticker":"LWLG","name":"Lightwave","weight":0.1},{"ticker":"POET","name":"POET","weight":0.09},{"ticker":"GFS","name":"格芯","weight":0.06},{"ticker":"TSEM","name":"高塔","weight":0.05},{"ticker":"NVDA","name":"英伟达","weight":0.02},{"ticker":"CSCO","name":"思科","weight":0.02}],"aTargets":[{"code":"300308","market":"SZ","name":"中际旭创","weight":1},{"code":"300502","market":"SZ","name":"新易盛","weight":0.9},{"code":"300394","market":"SZ","name":"天孚通信","weight":0.8},{"code":"300570","market":"SZ","name":"太辰光","weight":0.7},{"code":"002281","market":"SZ","name":"光迅科技","weight":0.6},{"code":"000988","market":"SZ","name":"华工科技","weight":0.5},{"code":"603083","market":"SH","name":"剑桥科技","weight":0.5},{"code":"301205","market":"SZ","name":"联特科技","weight":0.4},{"code":"300548","market":"SZ","name":"博创科技","weight":0.4},{"code":"002902","market":"SZ","name":"铭普光磁","weight":0.4}]},{"id":"semi-equip","name":"半导体设备","sectorIndex":"usPSI","usLeaders":[{"ticker":"ASML","name":"阿斯麦","weight":0.2827},{"ticker":"AMAT","name":"应用材料","weight":0.1643},{"ticker":"LRCX","name":"泛林","weight":0.1286},{"ticker":"KLAC","name":"科磊","weight":0.1243},{"ticker":"TER","name":"泰瑞达","weight":0.07},{"ticker":"ENTG","name":"Entegris","weight":0.0686},{"ticker":"MKSI","name":"MKS","weight":0.04},{"ticker":"BRKS","name":"Brooks","weight":0.0343},{"ticker":"NVMI","name":"Nova","weight":0.0171},{"ticker":"ICHR","name":"Ichor","weight":0.01}],"aTargets":[{"code":"002371","market":"SZ","name":"北方华创","weight":1},{"code":"688012","market":"SH","name":"中微公司","weight":0.9},{"code":"688082","market":"SH","name":"盛美上海","weight":0.8},{"code":"688072","market":"SH","name":"拓荆科技","weight":0.7},{"code":"688120","market":"SH","name":"华海清科","weight":0.6},{"code":"300604","market":"SZ","name":"长川科技","weight":0.5},{"code":"300567","market":"SZ","name":"精测电子","weight":0.5},{"code":"688037","market":"SH","name":"芯源微","weight":0.4},{"code":"688147","market":"SH","name":"微导纳米","weight":0.4},{"code":"600641","market":"SH","name":"万业企业","weight":0.4}]},{"id":"ic-design","name":"IC设计","sectorIndex":"usSMH","usLeaders":[{"ticker":"NVDA","name":"英伟达","weight":0.343},{"ticker":"AVGO","name":"博通","weight":0.1067},{"ticker":"AMD","name":"AMD","weight":0.0873},{"ticker":"TXN","name":"德州仪器","weight":0.0697},{"ticker":"QCOM","name":"高通","weight":0.069},{"ticker":"ADI","name":"亚德诺","weight":0.0513},{"ticker":"MRVL","name":"迈威尔","weight":0.0369},{"ticker":"NXPI","name":"恩智浦","weight":0.0319},{"ticker":"MCHP","name":"微芯","weight":0.0235},{"ticker":"ON","name":"安森美","weight":0.0202}],"aTargets":[{"code":"603501","market":"SH","name":"韦尔股份","weight":1},{"code":"688008","market":"SH","name":"澜起科技","weight":0.9},{"code":"002049","market":"SZ","name":"紫光国微","weight":0.8},{"code":"300661","market":"SZ","name":"圣邦股份","weight":0.7},{"code":"300782","market":"SZ","name":"卓胜微","weight":0.6},{"code":"688099","market":"SH","name":"晶晨股份","weight":0.5},{"code":"603893","market":"SH","name":"瑞芯微","weight":0.5},{"code":"688608","market":"SH","name":"恒玄科技","weight":0.4},{"code":"688018","market":"SH","name":"乐鑫科技","weight":0.4},{"code":"603160","market":"SH","name":"汇顶科技","weight":0.4}]},{"id":"foundry","name":"晶圆制造","sectorIndex":"usSMH","usLeaders":[{"ticker":"TSM","name":"台积电","weight":0.4466},{"ticker":"INTC","name":"英特尔","weight":0.1311},{"ticker":"GFS","name":"格芯","weight":0.0681},{"ticker":"STM","name":"意法","weight":0.0513},{"ticker":"UMC","name":"联电","weight":0.0787},{"ticker":"ON","name":"安森美","weight":0.0593},{"ticker":"VIS","name":"世界先进","weight":0.0358},{"ticker":"TSEM","name":"高塔","weight":0.0331},{"ticker":"ASX","name":"日月光","weight":0.0262},{"ticker":"GSIT","name":"GSI","weight":0.0014}],"aTargets":[{"code":"688981","market":"SH","name":"中芯国际","weight":1},{"code":"01347","market":"HK","name":"华虹半导体","weight":0.9},{"code":"688249","market":"SH","name":"晶合集成","weight":0.8},{"code":"688469","market":"SH","name":"芯联集成","weight":0.7},{"code":"600460","market":"SH","name":"士兰微","weight":0.6},{"code":"688396","market":"SH","name":"华润微","weight":0.5},{"code":"688172","market":"SH","name":"燕东微","weight":0.5},{"code":"300456","market":"SZ","name":"赛微电子","weight":0.4},{"code":"003026","market":"SZ","name":"中晶科技","weight":0.4},{"code":"688047","market":"SH","name":"龙芯中科","weight":0.4}]},{"id":"memory","name":"存储","sectorIndex":"usSOXQ","usLeaders":[{"ticker":"MU","name":"美光","weight":0.308},{"ticker":"WDC","name":"西部数据","weight":0.108},{"ticker":"SNDK","name":"闪迪","weight":0.107},{"ticker":"STX","name":"希捷","weight":0.098},{"ticker":"PSTG","name":"Pure","weight":0.098},{"ticker":"NTAP","name":"NetApp","weight":0.087},{"ticker":"DELL","name":"戴尔","weight":0.067},{"ticker":"SMCI","name":"超微","weight":0.052},{"ticker":"RMBS","name":"Rambus","weight":0.045},{"ticker":"SIMO","name":"慧荣","weight":0.032}],"aTargets":[{"code":"603986","market":"SH","name":"兆易创新","weight":1},{"code":"300223","market":"SZ","name":"北京君正","weight":0.9},{"code":"301308","market":"SZ","name":"江波龙","weight":0.8},{"code":"688525","market":"SH","name":"佰维存储","weight":0.8},{"code":"688110","market":"SH","name":"东芯股份","weight":0.7},{"code":"688766","market":"SH","name":"普冉股份","weight":0.6},{"code":"001309","market":"SZ","name":"德明利","weight":0.5},{"code":"300475","market":"SZ","name":"香农芯创","weight":0.5},{"code":"300024","market":"SZ","name":"万润科技","weight":0.4},{"code":"000021","market":"SZ","name":"深科技","weight":0.4}]},{"id":"packaging","name":"封测","sectorIndex":"usFTXL","usLeaders":[{"ticker":"ASX","name":"日月光","weight":0.277},{"ticker":"AMKR","name":"安靠","weight":0.166},{"ticker":"TER","name":"泰瑞达","weight":0.153},{"ticker":"FORM","name":"福达","weight":0.085},{"ticker":"KLIC","name":"库力索法","weight":0.073},{"ticker":"CAMT","name":"康特","weight":0.067},{"ticker":"AEHR","name":"Aehr","weight":0.053},{"ticker":"ONTO","name":"Onto","weight":0.052},{"ticker":"COHU","name":"科休","weight":0.048},{"ticker":"IMOS","name":"ChipMOS","weight":0.026}],"aTargets":[{"code":"600584","market":"SH","name":"长电科技","weight":1},{"code":"002156","market":"SZ","name":"通富微电","weight":0.9},{"code":"002185","market":"SZ","name":"华天科技","weight":0.8},{"code":"603005","market":"SH","name":"晶方科技","weight":0.7},{"code":"002845","market":"SZ","name":"同兴达","weight":0.6},{"code":"688362","market":"SH","name":"甬矽电子","weight":0.5},{"code":"688135","market":"SH","name":"利扬芯片","weight":0.5},{"code":"000021","market":"SZ","name":"深科技","weight":0.4},{"code":"600667","market":"SH","name":"太极实业","weight":0.4},{"code":"002077","market":"SZ","name":"大港股份","weight":0.4}]},{"id":"server","name":"数据中心","sectorIndex":"usXLK","usLeaders":[{"ticker":"DELL","name":"戴尔","weight":0.183},{"ticker":"IBM","name":"IBM","weight":0.162},{"ticker":"LITE","name":"鲁门特姆","weight":0.109},{"ticker":"SMCI","name":"超微","weight":0.134},{"ticker":"EQIX","name":"Equinix","weight":0.108},{"ticker":"HPE","name":"慧与","weight":0.077},{"ticker":"DLR","name":"Digital","weight":0.07},{"ticker":"NTAP","name":"NetApp","weight":0.055},{"ticker":"PSTG","name":"Pure","weight":0.05},{"ticker":"CVLT","name":"Commvault","weight":0.021}],"aTargets":[{"code":"601138","market":"SH","name":"工业富联","weight":1},{"code":"000977","market":"SZ","name":"浪潮信息","weight":0.9},{"code":"603019","market":"SH","name":"中科曙光","weight":0.8},{"code":"000938","market":"SZ","name":"紫光股份","weight":0.7},{"code":"000066","market":"SZ","name":"中国长城","weight":0.6},{"code":"301236","market":"SZ","name":"软通动力","weight":0.5},{"code":"600410","market":"SH","name":"华胜天成","weight":0.5},{"code":"000628","market":"SZ","name":"高新发展","weight":0.4},{"code":"600498","market":"SH","name":"烽火通信","weight":0.4},{"code":"000034","market":"SZ","name":"神州数码","weight":0.4}]},{"id":"liquid-cooling","name":"液冷","sectorIndex":"usPAVE","usLeaders":[{"ticker":"VRT","name":"维谛","weight":0.194},{"ticker":"ETN","name":"伊顿","weight":0.185},{"ticker":"TT","name":"特灵","weight":0.174},{"ticker":"JCI","name":"江森","weight":0.129},{"ticker":"NVT","name":"盈凡","weight":0.075},{"ticker":"SBGSY","name":"施耐德","weight":0.063},{"ticker":"ECL","name":"艺康","weight":0.06},{"ticker":"EMR","name":"艾默生","weight":0.047},{"ticker":"MOD","name":"摩丁","weight":0.042},{"ticker":"AAON","name":"AAON","weight":0.031}],"aTargets":[{"code":"002837","market":"SZ","name":"英维克","weight":1},{"code":"300499","market":"SZ","name":"高澜股份","weight":0.9},{"code":"301018","market":"SZ","name":"申菱环境","weight":0.8},{"code":"300990","market":"SZ","name":"同飞股份","weight":0.7},{"code":"002335","market":"SZ","name":"科华数据","weight":0.6},{"code":"872808","market":"BJ","name":"曙光数创","weight":0.5},{"code":"300249","market":"SZ","name":"依米康","weight":0.5},{"code":"002272","market":"SZ","name":"川润股份","weight":0.4},{"code":"301489","market":"SZ","name":"思泉新材","weight":0.4},{"code":"300731","market":"SZ","name":"科创新源","weight":0.4}]},{"id":"ai-software","name":"AI软件","sectorIndex":"usAIQ","usLeaders":[{"ticker":"MSFT","name":"微软","weight":0.265},{"ticker":"GOOGL","name":"谷歌","weight":0.212},{"ticker":"META","name":"Meta","weight":0.161},{"ticker":"AMZN","name":"亚马逊","weight":0.16},{"ticker":"ORCL","name":"甲骨文","weight":0.057},{"ticker":"CRM","name":"赛富时","weight":0.044},{"ticker":"NOW","name":"ServiceNow","weight":0.038},{"ticker":"ADBE","name":"Adobe","weight":0.032},{"ticker":"IBM","name":"IBM","weight":0.016},{"ticker":"SNOW","name":"Snowflake","weight":0.014}],"aTargets":[{"code":"002230","market":"SZ","name":"科大讯飞","weight":1},{"code":"601360","market":"SH","name":"三六零","weight":0.9},{"code":"688111","market":"SH","name":"金山办公","weight":0.8},{"code":"300624","market":"SZ","name":"万兴科技","weight":0.7},{"code":"300229","market":"SZ","name":"拓尔思","weight":0.6},{"code":"300418","market":"SZ","name":"昆仑万维","weight":0.5},{"code":"300058","market":"SZ","name":"蓝色光标","weight":0.5},{"code":"00020","market":"HK","name":"商汤-W","weight":0.4},{"code":"300364","market":"SZ","name":"中文在线","weight":0.4},{"code":"002315","market":"SZ","name":"焦点科技","weight":0.4}]},{"id":"cloud-computing","name":"云计算","sectorIndex":"usSKYY","usLeaders":[{"ticker":"MSFT","name":"微软","weight":0.289},{"ticker":"AMZN","name":"亚马逊","weight":0.247},{"ticker":"GOOGL","name":"谷歌","weight":0.229},{"ticker":"ORCL","name":"甲骨文","weight":0.078},{"ticker":"CRM","name":"赛富时","weight":0.054},{"ticker":"NOW","name":"ServiceNow","weight":0.044},{"ticker":"SNOW","name":"Snowflake","weight":0.022},{"ticker":"NET","name":"Cloudflare","weight":0.015},{"ticker":"DDOG","name":"Datadog","weight":0.015},{"ticker":"OKTA","name":"Okta","weight":0.006}],"aTargets":[{"code":"000032","market":"SZ","name":"深桑达A","weight":1},{"code":"002368","market":"SZ","name":"太极股份","weight":0.9},{"code":"300454","market":"SZ","name":"深信服","weight":0.8},{"code":"688158","market":"SH","name":"优刻得","weight":0.7},{"code":"000977","market":"SZ","name":"浪潮软件","weight":0.6},{"code":"300017","market":"SZ","name":"网宿科技","weight":0.5},{"code":"688316","market":"SH","name":"青云科技","weight":0.5},{"code":"000815","market":"SZ","name":"美利云","weight":0.4},{"code":"300212","market":"SZ","name":"易华录","weight":0.4},{"code":"600602","market":"SH","name":"云赛智联","weight":0.4}]},{"id":"fintech","name":"金融科技","sectorIndex":"usFINX","usLeaders":[{"ticker":"V","name":"维萨","weight":0.348},{"ticker":"MA","name":"万事达","weight":0.289},{"ticker":"PYPL","name":"贝宝","weight":0.077},{"ticker":"FI","name":"费哲","weight":0.069},{"ticker":"NU","name":"NuBank","weight":0.061},{"ticker":"SQ","name":"Block","weight":0.057},{"ticker":"COIN","name":"Coinbase","weight":0.042},{"ticker":"HOOD","name":"Robinhood","weight":0.024},{"ticker":"AFRM","name":"Affirm","weight":0.017},{"ticker":"SOFI","name":"SoFi","weight":0.015}],"aTargets":[{"code":"300059","market":"SZ","name":"东方财富","weight":1},{"code":"600570","market":"SH","name":"恒生电子","weight":0.9},{"code":"300033","market":"SZ","name":"同花顺","weight":0.8},{"code":"300803","market":"SZ","name":"指南针","weight":0.7},{"code":"002657","market":"SZ","name":"中科金财","weight":0.6},{"code":"300377","market":"SZ","name":"赢时胜","weight":0.5},{"code":"300085","market":"SZ","name":"银之杰","weight":0.5},{"code":"300130","market":"SZ","name":"新国都","weight":0.4},{"code":"300674","market":"SZ","name":"宇信科技","weight":0.4},{"code":"300339","market":"SZ","name":"润和软件","weight":0.4}]},{"id":"cybersecurity","name":"网络安全","sectorIndex":"usCIBR","usLeaders":[{"ticker":"PANW","name":"派拓","weight":0.2292},{"ticker":"CRWD","name":"众击","weight":0.2073},{"ticker":"FTNT","name":"飞塔","weight":0.1645},{"ticker":"ZS","name":"Zscaler","weight":0.0989},{"ticker":"NET","name":"Cloudflare","weight":0.0947},{"ticker":"CHKP","name":"检查点","weight":0.0605},{"ticker":"CYBR","name":"CyberArk","weight":0.0513},{"ticker":"OKTA","name":"Okta","weight":0.0479},{"ticker":"S","name":"SentinelOne","weight":0.0319},{"ticker":"RPD","name":"Rapid7","weight":0.0137}],"aTargets":[{"code":"601360","market":"SH","name":"三六零","weight":1},{"code":"300454","market":"SZ","name":"深信服","weight":0.9},{"code":"002439","market":"SZ","name":"启明星辰","weight":0.8},{"code":"688023","market":"SH","name":"安恒信息","weight":0.7},{"code":"300369","market":"SZ","name":"绿盟科技","weight":0.6},{"code":"300188","market":"SZ","name":"美亚柏科","weight":0.5},{"code":"002212","market":"SZ","name":"天融信","weight":0.5},{"code":"300311","market":"SZ","name":"任子行","weight":0.4},{"code":"300579","market":"SZ","name":"电科网安","weight":0.4},{"code":"688225","market":"SH","name":"亚信安全","weight":0.4}]},{"id":"space","name":"商业航天","sectorIndex":"usUFO","usLeaders":[{"ticker":"SPCX","name":"SpaceX","weight":0.2059},{"ticker":"RKLB","name":"RocketLab","weight":0.1894},{"ticker":"ASTS","name":"AST","weight":0.1812},{"ticker":"LMT","name":"洛克希德","weight":0.1235},{"ticker":"SPCE","name":"维珍","weight":0.1},{"ticker":"SATL","name":"Satellogic","weight":0.06},{"ticker":"VORB","name":"Virgin","weight":0.04},{"ticker":"SPIR","name":"Spire","weight":0.04},{"ticker":"BKSY","name":"BlackSky","weight":0.04},{"ticker":"MYNA","name":"Mynaric","weight":0.02}],"aTargets":[{"code":"600118","market":"SH","name":"中国卫星","weight":1},{"code":"601698","market":"SH","name":"中国卫通","weight":0.9},{"code":"688066","market":"SH","name":"航天宏图","weight":0.8},{"code":"688568","market":"SH","name":"中科星图","weight":0.7},{"code":"002465","market":"SZ","name":"海格通信","weight":0.6},{"code":"300045","market":"SZ","name":"华力创通","weight":0.5},{"code":"002151","market":"SZ","name":"北斗星通","weight":0.5},{"code":"300136","market":"SZ","name":"信维通信","weight":0.4},{"code":"300053","market":"SZ","name":"欧比特","weight":0.4},{"code":"300342","market":"SZ","name":"天银机电","weight":0.4}]},{"id":"optical-module","name":"光模块","sectorIndex":"usIGN","usLeaders":[{"ticker":"COHR","name":"高意","weight":0.188},{"ticker":"LITE","name":"鲁门特姆","weight":0.185},{"ticker":"FN","name":"Fabrinet","weight":0.178},{"ticker":"AAOI","name":"AOI","weight":0.158},{"ticker":"CIEN","name":"Ciena","weight":0.11},{"ticker":"JBL","name":"捷普","weight":0.105},{"ticker":"AVGO","name":"博通","weight":0.025},{"ticker":"CSCO","name":"思科","weight":0.02},{"ticker":"MTSI","name":"MACOM","weight":0.015},{"ticker":"MXL","name":"MaxLinear","weight":0.015}],"aTargets":[{"code":"300308","market":"SZ","name":"中际旭创","weight":1},{"code":"300502","market":"SZ","name":"新易盛","weight":0.9},{"code":"300394","market":"SZ","name":"天孚通信","weight":0.8},{"code":"002281","market":"SZ","name":"光迅科技","weight":0.7},{"code":"300570","market":"SZ","name":"太辰光","weight":0.6},{"code":"603083","market":"SH","name":"剑桥科技","weight":0.5},{"code":"300548","market":"SZ","name":"博创科技","weight":0.5},{"code":"000988","market":"SZ","name":"华工科技","weight":0.4},{"code":"000070","market":"SZ","name":"特发信息","weight":0.4},{"code":"300789","market":"SZ","name":"德科立","weight":0.4}]},{"id":"consumer-electronics","name":"消费电子","sectorIndex":"usXLK","usLeaders":[{"ticker":"AAPL","name":"苹果","weight":0.5174},{"ticker":"SONY","name":"索尼","weight":0.0745},{"ticker":"QCOM","name":"高通","weight":0.0745},{"ticker":"GLW","name":"康宁","weight":0.0336},{"ticker":"LOGI","name":"罗技","weight":0.0672},{"ticker":"JBL","name":"捷普","weight":0.06},{"ticker":"DELL","name":"戴尔","weight":0.0576},{"ticker":"HPQ","name":"惠普","weight":0.0456},{"ticker":"SWKS","name":"思佳讯","weight":0.0408},{"ticker":"QRVO","name":"威讯","weight":0.0288}],"aTargets":[{"code":"002475","market":"SZ","name":"立讯精密","weight":1},{"code":"002241","market":"SZ","name":"歌尔股份","weight":0.9},{"code":"300433","market":"SZ","name":"蓝思科技","weight":0.8},{"code":"002600","market":"SZ","name":"领益智造","weight":0.7},{"code":"601138","market":"SH","name":"工业富联","weight":0.6},{"code":"300115","market":"SZ","name":"长盈精密","weight":0.5},{"code":"002273","market":"SZ","name":"水晶光电","weight":0.5},{"code":"601231","market":"SH","name":"环旭电子","weight":0.4},{"code":"02382","market":"HK","name":"舜宇光学","weight":0.4},{"code":"02018","market":"HK","name":"瑞声科技","weight":0.4}]},{"id":"pcb","name":"PCB","sectorIndex":"usXLI","usLeaders":[{"ticker":"JBL","name":"捷普","weight":0.262},{"ticker":"FN","name":"菲尼萨","weight":0.148},{"ticker":"TTMI","name":"TTM","weight":0.138},{"ticker":"SANM","name":"新美亚","weight":0.124},{"ticker":"PLXS","name":"Plexus","weight":0.086},{"ticker":"MKSI","name":"MKS","weight":0.078},{"ticker":"ROG","name":"罗杰斯","weight":0.076},{"ticker":"BHE","name":"Benchmark","weight":0.037},{"ticker":"CTS","name":"CTS","weight":0.033},{"ticker":"PKE","name":"Park","weight":0.018}],"aTargets":[{"code":"002938","market":"SZ","name":"鹏鼎控股","weight":1},{"code":"002463","market":"SZ","name":"沪电股份","weight":0.9},{"code":"600183","market":"SH","name":"生益科技","weight":0.8},{"code":"002916","market":"SZ","name":"深南电路","weight":0.7},{"code":"002384","market":"SZ","name":"东山精密","weight":0.6},{"code":"300476","market":"SZ","name":"胜宏科技","weight":0.5},{"code":"603228","market":"SH","name":"景旺电子","weight":0.5},{"code":"002815","market":"SZ","name":"崇达技术","weight":0.4},{"code":"002436","market":"SZ","name":"兴森科技","weight":0.4},{"code":"603920","market":"SH","name":"世运电路","weight":0.4}]},{"id":"robotics","name":"人形机器人","sectorIndex":"usBOTZ","usLeaders":[{"ticker":"TSLA","name":"特斯拉","weight":0.4487},{"ticker":"ABB","name":"ABB","weight":0.1051},{"ticker":"SIEGY","name":"西门子","weight":0.085},{"ticker":"FANUY","name":"发那科","weight":0.0612},{"ticker":"ISRG","name":"直觉外科","weight":0.0731},{"ticker":"HON","name":"霍尼韦尔","weight":0.0654},{"ticker":"ROK","name":"罗克韦尔","weight":0.0526},{"ticker":"IR","name":"英格索兰","weight":0.0397},{"ticker":"CGNX","name":"康耐视","weight":0.0372},{"ticker":"YASKY","name":"安川","weight":0.0321}],"aTargets":[{"code":"688017","market":"SH","name":"绿的谐波","weight":1},{"code":"002050","market":"SZ","name":"三花智控","weight":0.9},{"code":"601689","market":"SH","name":"拓普集团","weight":0.8},{"code":"603728","market":"SH","name":"鸣志电器","weight":0.7},{"code":"003021","market":"SZ","name":"兆威机电","weight":0.6},{"code":"002896","market":"SZ","name":"中大力德","weight":0.5},{"code":"002472","market":"SZ","name":"双环传动","weight":0.5},{"code":"300124","market":"SZ","name":"汇川技术","weight":0.4},{"code":"688322","market":"SH","name":"奥比中光","weight":0.4},{"code":"688160","market":"SH","name":"步科股份","weight":0.4}]},{"id":"auto","name":"汽车整车","sectorIndex":"usCARZ","usLeaders":[{"ticker":"TSLA","name":"特斯拉","weight":0.385},{"ticker":"TM","name":"丰田","weight":0.1974},{"ticker":"GM","name":"通用","weight":0.0628},{"ticker":"VWAGY","name":"大众","weight":0.0547},{"ticker":"F","name":"福特","weight":0.0808},{"ticker":"HMC","name":"本田","weight":0.0767},{"ticker":"STLA","name":"Stellantis","weight":0.0699},{"ticker":"RIVN","name":"Rivian","weight":0.0329},{"ticker":"NIO","name":"蔚来","weight":0.0247},{"ticker":"LCID","name":"Lucid","weight":0.0151}],"aTargets":[{"code":"002594","market":"SZ","name":"比亚迪","weight":1},{"code":"601127","market":"SH","name":"赛力斯","weight":0.9},{"code":"601633","market":"SH","name":"长城汽车","weight":0.8},{"code":"000625","market":"SZ","name":"长安汽车","weight":0.7},{"code":"601238","market":"SH","name":"广汽集团","weight":0.6},{"code":"600104","market":"SH","name":"上汽集团","weight":0.5},{"code":"600418","market":"SH","name":"江淮汽车","weight":0.5},{"code":"600733","market":"SH","name":"北汽蓝谷","weight":0.4},{"code":"09866","market":"HK","name":"蔚来-SW","weight":0.4},{"code":"000550","market":"SZ","name":"江铃汽车","weight":0.4}]},{"id":"autonomous","name":"自动驾驶","sectorIndex":"usIDRV","usLeaders":[{"ticker":"GOOGL","name":"谷歌","weight":0.331},{"ticker":"TSLA","name":"特斯拉","weight":0.1794},{"ticker":"NVDA","name":"英伟达","weight":0.1547},{"ticker":"QCOM","name":"高通","weight":0.0348},{"ticker":"MBLY","name":"Mobileye","weight":0.1085},{"ticker":"APTV","name":"安波福","weight":0.0798},{"ticker":"AUR","name":"Aurora","weight":0.0383},{"ticker":"ANSS","name":"Ansys","weight":0.0383},{"ticker":"VLEEY","name":"法雷奥","weight":0.0191},{"ticker":"LAZR","name":"Luminar","weight":0.016}],"aTargets":[{"code":"002920","market":"SZ","name":"德赛西威","weight":1},{"code":"300496","market":"SZ","name":"中科创达","weight":0.9},{"code":"688326","market":"SH","name":"经纬恒润","weight":0.8},{"code":"300552","market":"SZ","name":"万集科技","weight":0.7},{"code":"002373","market":"SZ","name":"千方科技","weight":0.6},{"code":"600699","market":"SH","name":"均胜电子","weight":0.5},{"code":"002906","market":"SZ","name":"华阳集团","weight":0.5},{"code":"002869","market":"SZ","name":"金溢科技","weight":0.4},{"code":"300098","market":"SZ","name":"高新兴","weight":0.4},{"code":"002405","market":"SZ","name":"四维图新","weight":0.4}]},{"id":"battery","name":"动力电池","sectorIndex":"usBATT","usLeaders":[{"ticker":"TSLA","name":"特斯拉","weight":0.4254},{"ticker":"BYDDY","name":"比亚迪","weight":0.1711},{"ticker":"PCRFY","name":"松下","weight":0.0824},{"ticker":"ENPH","name":"Enphase","weight":0.021},{"ticker":"ALB","name":"雅保","weight":0.0818},{"ticker":"QS","name":"QuantumScape","weight":0.0818},{"ticker":"ENVX","name":"Enovix","weight":0.0545},{"ticker":"AMPX","name":"Amprius","weight":0.0455},{"ticker":"SLDP","name":"SolidPower","weight":0.0212},{"ticker":"FREY","name":"FREYR","weight":0.0152}],"aTargets":[{"code":"300750","market":"SZ","name":"宁德时代","weight":1},{"code":"002594","market":"SZ","name":"比亚迪","weight":0.9},{"code":"300014","market":"SZ","name":"亿纬锂能","weight":0.8},{"code":"002074","market":"SZ","name":"国轩高科","weight":0.7},{"code":"300207","market":"SZ","name":"欣旺达","weight":0.6},{"code":"300438","market":"SZ","name":"鹏辉能源","weight":0.5},{"code":"03931","market":"HK","name":"中创新航","weight":0.5},{"code":"300068","market":"SZ","name":"南都电源","weight":0.4},{"code":"688567","market":"SH","name":"孚能科技","weight":0.4},{"code":"688063","market":"SH","name":"派能科技","weight":0.4}]},{"id":"new-energy","name":"光伏","sectorIndex":"usTAN","usLeaders":[{"ticker":"FSLR","name":"第一太阳能","weight":0.2436},{"ticker":"ENPH","name":"Enphase","weight":0.2079},{"ticker":"JKS","name":"晶科","weight":0.1416},{"ticker":"SEDG","name":"SolarEdge","weight":0.1069},{"ticker":"CSIQ","name":"加拿大太阳能","weight":0.1096},{"ticker":"RUN","name":"Sunrun","weight":0.0625},{"ticker":"ARRY","name":"Array","weight":0.0451},{"ticker":"SHLS","name":"Shoals","weight":0.0358},{"ticker":"NOVA","name":"Sunnova","weight":0.0276},{"ticker":"MAXN","name":"Maxeon","weight":0.0195}],"aTargets":[{"code":"601012","market":"SH","name":"隆基绿能","weight":1},{"code":"300274","market":"SZ","name":"阳光电源","weight":0.9},{"code":"600438","market":"SH","name":"通威股份","weight":0.8},{"code":"002459","market":"SZ","name":"晶澳科技","weight":0.7},{"code":"688599","market":"SH","name":"天合光能","weight":0.6},{"code":"002129","market":"SZ","name":"TCL中环","weight":0.5},{"code":"688472","market":"SH","name":"阿特斯","weight":0.5},{"code":"688223","market":"SH","name":"晶科能源","weight":0.4},{"code":"688390","market":"SH","name":"固德威","weight":0.4},{"code":"605117","market":"SH","name":"德业股份","weight":0.4}]},{"id":"lithium","name":"锂矿","sectorIndex":"usLIT","usLeaders":[{"ticker":"ALB","name":"雅保","weight":0.237},{"ticker":"SQM","name":"SQM","weight":0.212},{"ticker":"LAC","name":"美洲锂业","weight":0.103},{"ticker":"ALTM","name":"Arcadium","weight":0.103},{"ticker":"PLS","name":"Pilbara","weight":0.089},{"ticker":"MIN","name":"Mineral","weight":0.087},{"ticker":"LTHM","name":"Livent","weight":0.062},{"ticker":"IGO","name":"IGO","weight":0.05},{"ticker":"AKE","name":"Allkem","weight":0.031},{"ticker":"CXO","name":"Core","weight":0.027}],"aTargets":[{"code":"002466","market":"SZ","name":"天齐锂业","weight":1},{"code":"002460","market":"SZ","name":"赣锋锂业","weight":0.9},{"code":"000408","market":"SZ","name":"藏格矿业","weight":0.8},{"code":"002756","market":"SZ","name":"永兴材料","weight":0.7},{"code":"002738","market":"SZ","name":"中矿资源","weight":0.6},{"code":"002176","market":"SZ","name":"江特电机","weight":0.5},{"code":"000762","market":"SZ","name":"西藏矿业","weight":0.5},{"code":"002192","market":"SZ","name":"融捷股份","weight":0.4},{"code":"000155","market":"SZ","name":"川能动力","weight":0.4},{"code":"002497","market":"SZ","name":"雅化集团","weight":0.4}]},{"id":"copper","name":"铜","sectorIndex":"usCOPX","usLeaders":[{"ticker":"SCCO","name":"南方铜业","weight":0.2134},{"ticker":"RIO","name":"力拓","weight":0.1878},{"ticker":"BHP","name":"必和必拓","weight":0.1707},{"ticker":"FCX","name":"自由港","weight":0.128},{"ticker":"NGLOY","name":"英美资源","weight":0.1263},{"ticker":"TECK","name":"泰克","weight":0.0632},{"ticker":"LUNMF","name":"Lundin","weight":0.0474},{"ticker":"MLI","name":"Mueller","weight":0.0316},{"ticker":"HBM","name":"Hudbay","weight":0.0237},{"ticker":"IVPAF","name":"Ivanhoe","weight":0.0079}],"aTargets":[{"code":"601899","market":"SH","name":"紫金矿业","weight":1},{"code":"603993","market":"SH","name":"洛阳钼业","weight":0.9},{"code":"600362","market":"SH","name":"江西铜业","weight":0.8},{"code":"000630","market":"SZ","name":"铜陵有色","weight":0.7},{"code":"601168","market":"SH","name":"西部矿业","weight":0.6},{"code":"000878","market":"SZ","name":"云南铜业","weight":0.5},{"code":"000737","market":"SZ","name":"北方铜业","weight":0.5},{"code":"000807","market":"SZ","name":"白银有色","weight":0.4},{"code":"002203","market":"SZ","name":"海亮股份","weight":0.4},{"code":"601609","market":"SH","name":"金田股份","weight":0.4}]},{"id":"smart-grid","name":"智能电网","sectorIndex":"usGRID","usLeaders":[{"ticker":"GEV","name":"GEVernova","weight":0.2525},{"ticker":"ETN","name":"伊顿","weight":0.2368},{"ticker":"EMR","name":"艾默生","weight":0.1254},{"ticker":"HUBB","name":"哈贝尔","weight":0.0853},{"ticker":"ROK","name":"罗克韦尔","weight":0.1347},{"ticker":"AGR","name":"Avangrid","weight":0.0597},{"ticker":"ITRI","name":"Itron","weight":0.0474},{"ticker":"ORA","name":"Ormat","weight":0.0276},{"ticker":"AWMN","name":"Advanced","weight":0.023},{"ticker":"POWL","name":"Powell","weight":0.0077}],"aTargets":[{"code":"600089","market":"SH","name":"特变电工","weight":1},{"code":"600406","market":"SH","name":"国电南瑞","weight":0.9},{"code":"601179","market":"SH","name":"中国西电","weight":0.8},{"code":"600312","market":"SH","name":"平高电气","weight":0.7},{"code":"000400","market":"SZ","name":"许继电气","weight":0.6},{"code":"002028","market":"SZ","name":"思源电气","weight":0.5},{"code":"601567","market":"SH","name":"三星医疗","weight":0.5},{"code":"603556","market":"SH","name":"海兴电力","weight":0.4},{"code":"688676","market":"SH","name":"金盘科技","weight":0.4},{"code":"600550","market":"SH","name":"保变电气","weight":0.4}]},{"id":"fiber-optic","name":"光纤光缆","sectorIndex":"usNXTG","usLeaders":[{"ticker":"GLW","name":"康宁","weight":0.18},{"ticker":"APH","name":"安费诺","weight":0.17},{"ticker":"ZAYO","name":"扎约","weight":0.16},{"ticker":"CIEN","name":"Ciena","weight":0.15},{"ticker":"WCC","name":"威斯科","weight":0.11},{"ticker":"LUMN","name":"流明科技","weight":0.08},{"ticker":"BDC","name":"贝尔登","weight":0.07},{"ticker":"COMM","name":"康普","weight":0.05},{"ticker":"UNIT","name":"尤尼蒂","weight":0.02},{"ticker":"CLFD","name":"克利菲尔德","weight":0.01}],"aTargets":[{"code":"600869","market":"SH","name":"长飞光纤","weight":1},{"code":"600487","market":"SH","name":"亨通光电","weight":0.9},{"code":"600522","market":"SH","name":"中天科技","weight":0.8},{"code":"600498","market":"SH","name":"烽火通信","weight":0.7},{"code":"002491","market":"SZ","name":"通鼎互联","weight":0.6},{"code":"600105","market":"SH","name":"永鼎股份","weight":0.5},{"code":"000070","market":"SZ","name":"特发信息","weight":0.5},{"code":"300265","market":"SZ","name":"长盈通","weight":0.4},{"code":"605222","market":"SH","name":"起帆电缆","weight":0.4},{"code":"000890","market":"SZ","name":"法尔胜","weight":0.4}]},{"id":"innovative-drug","name":"创新药","sectorIndex":"usPPH","usLeaders":[{"ticker":"LLY","name":"礼来","weight":0.229},{"ticker":"NVO","name":"诺和诺德","weight":0.195},{"ticker":"MRK","name":"默沙东","weight":0.112},{"ticker":"ABBV","name":"艾伯维","weight":0.111},{"ticker":"AZN","name":"阿斯利康","weight":0.084},{"ticker":"AMGN","name":"安进","weight":0.066},{"ticker":"JNJ","name":"强生","weight":0.064},{"ticker":"PFE","name":"辉瑞","weight":0.048},{"ticker":"BMY","name":"百时美","weight":0.047},{"ticker":"GILD","name":"吉利德","weight":0.043}],"aTargets":[{"code":"600276","market":"SH","name":"恒瑞医药","weight":1},{"code":"688235","market":"SH","name":"百济神州","weight":0.9},{"code":"01801","market":"HK","name":"信达生物","weight":0.8},{"code":"688506","market":"SH","name":"百利天恒","weight":0.7},{"code":"688192","market":"SH","name":"迪哲医药","weight":0.6},{"code":"00013","market":"HK","name":"和黄医药","weight":0.5},{"code":"002422","market":"SZ","name":"科伦药业","weight":0.5},{"code":"688180","market":"SH","name":"君实生物","weight":0.4},{"code":"688331","market":"SH","name":"荣昌生物","weight":0.4},{"code":"688578","market":"SH","name":"艾力斯","weight":0.4}]},{"id":"medical-device","name":"医疗器械","sectorIndex":"usIHI","usLeaders":[{"ticker":"TMO","name":"赛默飞","weight":0.191},{"ticker":"ABT","name":"雅培","weight":0.158},{"ticker":"ISRG","name":"直觉外科","weight":0.133},{"ticker":"DHR","name":"丹纳赫","weight":0.122},{"ticker":"SYK","name":"史赛克","weight":0.108},{"ticker":"MDT","name":"美敦力","weight":0.104},{"ticker":"EW","name":"爱德华","weight":0.059},{"ticker":"BDX","name":"碧迪","weight":0.058},{"ticker":"RMD","name":"瑞思迈","weight":0.037},{"ticker":"ZBH","name":"捷迈邦美","weight":0.03}],"aTargets":[{"code":"300760","market":"SZ","name":"迈瑞医疗","weight":1},{"code":"688271","market":"SH","name":"联影医疗","weight":0.9},{"code":"002223","market":"SZ","name":"鱼跃医疗","weight":0.8},{"code":"300529","market":"SZ","name":"健帆生物","weight":0.7},{"code":"300003","market":"SZ","name":"乐普医疗","weight":0.6},{"code":"300314","market":"SZ","name":"戴维医疗","weight":0.5},{"code":"300677","market":"SZ","name":"英科医疗","weight":0.5},{"code":"603882","market":"SH","name":"金域医学","weight":0.4},{"code":"300595","market":"SZ","name":"欧普康视","weight":0.4},{"code":"688581","market":"SH","name":"安杰思","weight":0.4}]},{"id":"gold","name":"黄金","sectorIndex":"usGDX","usLeaders":[{"ticker":"NEM","name":"纽蒙特","weight":0.2327},{"ticker":"AEM","name":"伊格尔","weight":0.1669},{"ticker":"GOLD","name":"巴里克","weight":0.163},{"ticker":"FNV","name":"弗兰科","weight":0.1374},{"ticker":"WPM","name":"Wheaton","weight":0.1175},{"ticker":"AU","name":"AngloGold","weight":0.064},{"ticker":"KGC","name":"金罗斯","weight":0.0535},{"ticker":"AGI","name":"Alamos","weight":0.0367},{"ticker":"CDE","name":"Coeur","weight":0.0168},{"ticker":"NG","name":"NovaGold","weight":0.0115}],"aTargets":[{"code":"601899","market":"SH","name":"紫金矿业","weight":1},{"code":"600547","market":"SH","name":"山东黄金","weight":0.9},{"code":"600489","market":"SH","name":"中金黄金","weight":0.8},{"code":"600988","market":"SH","name":"赤峰黄金","weight":0.7},{"code":"002155","market":"SZ","name":"湖南黄金","weight":0.6},{"code":"601069","market":"SH","name":"西部黄金","weight":0.5},{"code":"002237","market":"SZ","name":"恒邦股份","weight":0.5},{"code":"001337","market":"SZ","name":"四川黄金","weight":0.4},{"code":"300139","market":"SZ","name":"晓程科技","weight":0.4},{"code":"601028","market":"SH","name":"玉龙股份","weight":0.4}]},{"id":"consumption","name":"大众消费","sectorIndex":"usXLP","usLeaders":[{"ticker":"KO","name":"可口可乐","weight":0.2236},{"ticker":"PEP","name":"百事","weight":0.1971},{"ticker":"MCD","name":"麦当劳","weight":0.1739},{"ticker":"SBUX","name":"星巴克","weight":0.1054},{"ticker":"CMG","name":"Chipotle","weight":0.137},{"ticker":"YUM","name":"百胜","weight":0.0799},{"ticker":"DPZ","name":"达美乐","weight":0.0489},{"ticker":"WEN","name":"温迪","weight":0.0163},{"ticker":"DNUT","name":"Krispy","weight":0.0098},{"ticker":"JACK","name":"Jack","weight":0.0082}],"aTargets":[{"code":"600519","market":"SH","name":"贵州茅台","weight":1},{"code":"000858","market":"SZ","name":"五粮液","weight":0.9},{"code":"000568","market":"SZ","name":"泸州老窖","weight":0.8},{"code":"600809","market":"SH","name":"山西汾酒","weight":0.7},{"code":"000596","market":"SZ","name":"古井贡酒","weight":0.6},{"code":"603288","market":"SH","name":"海天味业","weight":0.5},{"code":"600887","market":"SH","name":"伊利股份","weight":0.5},{"code":"600600","market":"SH","name":"青岛啤酒","weight":0.4},{"code":"605499","market":"SH","name":"东鹏饮料","weight":0.4},{"code":"603027","market":"SH","name":"千禾味业","weight":0.4}]},{"id":"machinery","name":"机械","sectorIndex":"usXLI","usLeaders":[{"ticker":"CAT","name":"卡特彼勒","weight":0.2562},{"ticker":"DE","name":"约翰迪尔","weight":0.2134},{"ticker":"CMI","name":"康明斯","weight":0.128},{"ticker":"ITW","name":"伊利诺伊","weight":0.1024},{"ticker":"PCAR","name":"帕卡","weight":0.0833},{"ticker":"PH","name":"派克","weight":0.0667},{"ticker":"IR","name":"英格索兰","weight":0.05},{"ticker":"FLS","name":"福斯","weight":0.0333},{"ticker":"GTES","name":"盖茨","weight":0.0333},{"ticker":"XYL","name":"赛莱默","weight":0.0333}],"aTargets":[{"code":"600031","market":"SH","name":"三一重工","weight":1},{"code":"601100","market":"SH","name":"恒立液压","weight":0.9},{"code":"000157","market":"SZ","name":"中联重科","weight":0.8},{"code":"000425","market":"SZ","name":"徐工机械","weight":0.7},{"code":"300124","market":"SZ","name":"汇川技术","weight":0.6},{"code":"002353","market":"SZ","name":"杰瑞股份","weight":0.5},{"code":"000811","market":"SZ","name":"冰轮环境","weight":0.5},{"code":"000338","market":"SZ","name":"潍柴动力","weight":0.4},{"code":"002747","market":"SZ","name":"埃斯顿","weight":0.4},{"code":"000837","market":"SZ","name":"秦川机床","weight":0.4}]},{"id":"agriculture","name":"农业","sectorIndex":"usMOO","usLeaders":[{"ticker":"DE","name":"约翰迪尔","weight":0.2414},{"ticker":"ADM","name":"ADM","weight":0.2011},{"ticker":"CTVA","name":"科迪华","weight":0.1609},{"ticker":"MOS","name":"美盛","weight":0.0966},{"ticker":"NTR","name":"Nutrien","weight":0.1071},{"ticker":"CF","name":"CF","weight":0.0643},{"ticker":"ICL","name":"ICL","weight":0.0429},{"ticker":"SMG","name":"Scotts","weight":0.0429},{"ticker":"AGCO","name":"爱科","weight":0.0214},{"ticker":"LNDC","name":"Lindsay","weight":0.0214}],"aTargets":[{"code":"002385","market":"SZ","name":"大北农","weight":1},{"code":"000998","market":"SZ","name":"隆平高科","weight":0.9},{"code":"002714","market":"SZ","name":"牧原股份","weight":0.8},{"code":"300498","market":"SZ","name":"温氏股份","weight":0.7},{"code":"000876","market":"SZ","name":"新希望","weight":0.6},{"code":"600598","market":"SH","name":"北大荒","weight":0.5},{"code":"002311","market":"SZ","name":"海大集团","weight":0.5},{"code":"002299","market":"SZ","name":"圣农发展","weight":0.4},{"code":"300087","market":"SZ","name":"荃银高科","weight":0.4},{"code":"002041","market":"SZ","name":"登海种业","weight":0.4}]},{"id":"chemical","name":"化工","sectorIndex":"usXLB","usLeaders":[{"ticker":"LIN","name":"林德","weight":0.2414},{"ticker":"SHW","name":"宣伟","weight":0.2011},{"ticker":"APD","name":"空气化工","weight":0.1609},{"ticker":"ECL","name":"艺康","weight":0.0966},{"ticker":"DD","name":"杜邦","weight":0.1071},{"ticker":"PPG","name":"PPG","weight":0.0643},{"ticker":"LYB","name":"利安德","weight":0.0429},{"ticker":"CE","name":"塞拉尼斯","weight":0.0429},{"ticker":"EMN","name":"伊士曼","weight":0.0214},{"ticker":"ALB","name":"雅保","weight":0.0214}],"aTargets":[{"code":"600309","market":"SH","name":"万华化学","weight":1},{"code":"600346","market":"SH","name":"恒力石化","weight":0.9},{"code":"002493","market":"SZ","name":"荣盛石化","weight":0.8},{"code":"000301","market":"SZ","name":"东方盛虹","weight":0.7},{"code":"600426","market":"SH","name":"华鲁恒升","weight":0.6},{"code":"600989","market":"SH","name":"宝丰能源","weight":0.5},{"code":"002648","market":"SZ","name":"卫星化学","weight":0.5},{"code":"002092","market":"SZ","name":"中泰化学","weight":0.4},{"code":"600160","market":"SH","name":"巨化股份","weight":0.4},{"code":"600409","market":"SH","name":"三友化工","weight":0.4}]},{"id":"oil-gas","name":"石油石化","sectorIndex":"usXLE","usLeaders":[{"ticker":"XOM","name":"埃克森美孚","weight":0.2414},{"ticker":"CVX","name":"雪佛龙","weight":0.2011},{"ticker":"COP","name":"康菲","weight":0.1609},{"ticker":"OXY","name":"西方石油","weight":0.0966},{"ticker":"MPC","name":"Marathon","weight":0.1071},{"ticker":"VLO","name":"Valero","weight":0.0643},{"ticker":"PSX","name":"Phillips66","weight":0.0429},{"ticker":"MRO","name":"Marathon","weight":0.0429},{"ticker":"DVN","name":"Devon","weight":0.0214},{"ticker":"FANG","name":"Diamondback","weight":0.0214}],"aTargets":[{"code":"601857","market":"SH","name":"中国石油","weight":1},{"code":"600028","market":"SH","name":"中国石化","weight":0.9},{"code":"600938","market":"SH","name":"中国海油","weight":0.8},{"code":"601808","market":"SH","name":"中海油服","weight":0.7},{"code":"600346","market":"SH","name":"恒力石化","weight":0.6},{"code":"002493","market":"SZ","name":"荣盛石化","weight":0.5},{"code":"000301","market":"SZ","name":"东方盛虹","weight":0.5},{"code":"600256","market":"SH","name":"广汇能源","weight":0.4},{"code":"601233","market":"SH","name":"桐昆股份","weight":0.4},{"code":"002408","market":"SZ","name":"齐翔腾达","weight":0.4}]},{"id":"transport","name":"交运","sectorIndex":"usIYT","usLeaders":[{"ticker":"UPS","name":"联合包裹","weight":0.2414},{"ticker":"FDX","name":"联邦快递","weight":0.2011},{"ticker":"UNP","name":"联合太平洋","weight":0.1609},{"ticker":"CSX","name":"CSX","weight":0.0966},{"ticker":"NSC","name":"诺福克","weight":0.1071},{"ticker":"DAL","name":"达美","weight":0.0643},{"ticker":"LUV","name":"西南","weight":0.0429},{"ticker":"UAL","name":"美联航","weight":0.0429},{"ticker":"CHRW","name":"罗宾逊","weight":0.0214},{"ticker":"EXPD","name":"Expeditors","weight":0.0214}],"aTargets":[{"code":"002352","market":"SZ","name":"顺丰控股","weight":1},{"code":"601919","market":"SH","name":"中远海控","weight":0.9},{"code":"601006","market":"SH","name":"大秦铁路","weight":0.8},{"code":"601111","market":"SH","name":"中国国航","weight":0.7},{"code":"600029","market":"SH","name":"南方航空","weight":0.6},{"code":"601816","market":"SH","name":"京沪高铁","weight":0.5},{"code":"601872","market":"SH","name":"招商轮船","weight":0.5},{"code":"600018","market":"SH","name":"上港集团","weight":0.4},{"code":"02057","market":"HK","name":"中通快递","weight":0.4},{"code":"002120","market":"SZ","name":"韵达股份","weight":0.4}]},{"id":"coal","name":"煤炭","sectorIndex":"usKOL","usLeaders":[{"ticker":"BTU","name":"皮博迪","weight":0.2414},{"ticker":"CEIX","name":"CEIX","weight":0.2011},{"ticker":"ARCH","name":"Arch","weight":0.1609},{"ticker":"HCC","name":"Warrior","weight":0.0966},{"ticker":"METC","name":"Ramaco","weight":0.1071},{"ticker":"AMR","name":"Alpha","weight":0.0857},{"ticker":"SMR","name":"NexGen","weight":0.0429},{"ticker":"NC","name":"NACCO","weight":0.0214},{"ticker":"HNRG","name":"Hallador","weight":0.0214},{"ticker":"NR","name":"Newpark","weight":0.0214}],"aTargets":[{"code":"601088","market":"SH","name":"中国神华","weight":1},{"code":"601225","market":"SH","name":"陕西煤业","weight":0.9},{"code":"600188","market":"SH","name":"兖矿能源","weight":0.8},{"code":"601898","market":"SH","name":"中煤能源","weight":0.7},{"code":"601699","market":"SH","name":"潞安环能","weight":0.6},{"code":"000983","market":"SZ","name":"山西焦煤","weight":0.5},{"code":"601001","market":"SH","name":"晋控煤业","weight":0.5},{"code":"600123","market":"SH","name":"兰花科创","weight":0.4},{"code":"601101","market":"SH","name":"昊华能源","weight":0.4},{"code":"600985","market":"SH","name":"淮北矿业","weight":0.4}]}];
+
+const INDEX_CONFIG = [
+{usTicker:"usIXIC",usName:"NASDAQ",usLabel:"纳斯达克",aCode:"sz399006",aName:"创业板指",aLabel:"创业板"},
+{usTicker:"usSOXX",usName:"SOX(ETF)",usLabel:"费城半导体",aCode:"sh000688",aName:"科创50",aLabel:"科创50"},
+{usTicker:"usINX",usName:"SPX",usLabel:"标普500",aCode:"sh000300",aName:"沪深300",aLabel:"沪深300"},
+{usTicker:"usDJI",usName:"DJI",usLabel:"道琼斯",aCode:"sh000001",aName:"上证指数",aLabel:"上证"}
+];
+
+var usData = {};
+var aData = {};
+
+const fmtChg = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+const fmtNum = (n) => n.toFixed(2);
+const dirIcon = (d) => d === 'up' ? '▲' : d === 'down' ? '▼' : '—';
+
+const todayStr = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+
+function fetchScript(url) {
+  return new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = () => { setTimeout(resolve, 500); };
+    s.onerror = () => { setTimeout(resolve, 500); };
+    document.head.appendChild(s);
+  });
+}
+
+async function fetchUSData() {
+  const tickers = new Set();
+  for (const s of SECTORS) {
+    for (const u of s.usLeaders) tickers.add('us' + u.ticker);
+    if (s.sectorIndex) tickers.add(s.sectorIndex);
+  }
+  for (const idx of INDEX_CONFIG) tickers.add(idx.usTicker);
+  const arr = [...tickers];
+  const BATCH = 60;
+  for (let i = 0; i < arr.length; i += BATCH) {
+    const batch = arr.slice(i, i + BATCH);
+    await fetchScript('https://qt.gtimg.cn/q=' + batch.join(','));
+    for (const t of batch) {
+      const key = 'v_' + t;
+      if (window[key]) {
+        const f = window[key].split('~');
+        if (f.length >= 5 && f[3] && f[4]) {
+          const price = parseFloat(f[3]), prev = parseFloat(f[4]);
+          const rawTicker = t.startsWith('us') ? t.slice(2) : t;
+          usData[rawTicker] = { price: price, chg: prev ? ((price - prev) / prev * 100) : 0 };
+        }
+      }
+    }
+  }
+}
+
+async function fetchAData() {
+  const codes = new Set();
+  for (const s of SECTORS) { for (const a of s.aTargets) codes.add(a.market.toLowerCase() + a.code); }
+  for (const idx of INDEX_CONFIG) codes.add(idx.aCode);
+  const arr = [...codes];
+  const BATCH = 80;
+  for (let i = 0; i < arr.length; i += BATCH) {
+    const batch = arr.slice(i, i + BATCH);
+    await fetchScript('https://qt.gtimg.cn/q=' + batch.join(','));
+    for (const c of batch) {
+      const key = 'v_' + c.toLowerCase();
+      if (window[key]) {
+        const f = window[key].split('~');
+        if (f.length >= 5 && f[3] && f[4]) {
+          const price = parseFloat(f[3]), prev = parseFloat(f[4]);
+          aData[c] = { price: price, chg: prev ? ((price - prev) / prev * 100) : 0 };
+        }
+      }
+    }
+  }
+}
+
+function getSectorChg(sector) {
+  const tw = sector.usLeaders.reduce((s, u) => s + (u.weight || 1), 0);
+  let wp = 0;
+  for (const u of sector.usLeaders) {
+    const info = usData[u.ticker] || {};
+    wp += (info.chg || 0) * (u.weight || 1);
+  }
+  return wp / tw;
+}
+
+function render() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('sectorGrid').style.display = '';
+
+  const now = new Date();
+  const wd = now.getDay();
+  let usLabel, aLabel, usDate, aDate;
+  if (wd === 0) { usDate = yesterdayStr(); aDate = usDate; usLabel = '周五收盘'; aLabel = '周五收盘'; }
+  else if (wd >= 6) { usDate = yesterdayStr(); aDate = usDate; usLabel = '周五收盘'; aLabel = '周五收盘'; }
+  else { usDate = todayStr(); aDate = yesterdayStr(); usLabel = '今日收盘'; aLabel = '昨日收盘'; }
+
+  document.getElementById('subLine').textContent = '美股已收盘（T-1）丨 A股尚未开盘';
+  document.getElementById('datesLine').innerHTML = '<span>美股' + usLabel + ' · ' + usDate + '</span>';
+
+  const idxHtml = INDEX_CONFIG.map(idx => {
+    const u = usData[idx.usTicker.startsWith('us') ? idx.usTicker.slice(2) : idx.usTicker] || {};
+    const a = aData[idx.aCode] || {};
+    const uChg = u.chg || 0;
+    const aChg = a.chg || 0;
+    const cls = uChg > 0 ? 'up' : uChg < 0 ? 'down' : '';
+    const arr = uChg > 0 ? '▲' : uChg < 0 ? '▼' : '—';
+    const aCls = aChg > 0 ? 'up' : aChg < 0 ? 'down' : '';
+    const aArr = aChg > 0 ? '▲' : aChg < 0 ? '▼' : '—';
+    return '<div class="index-card"><div class="pair">' + idx.usName + ' ↔ ' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' vs A股' + idx.aLabel + '</div><div class="chg ' + cls + '">' + arr + ' ' + fmtChg(uChg) + '</div><div class="a-chg ' + aCls + '">A股前日 ' + aArr + fmtChg(aChg) + '</div></div>';
+  }).join('');
+  document.getElementById('indexBar').innerHTML = idxHtml;
+
+  const sectors = [];
+  for (const sector of SECTORS) {
+    const wp = getSectorChg(sector);
+    const usStocks = sector.usLeaders.slice(0, 4).map(u => {
+      const info = usData[u.ticker] || {};
+      return { code: u.ticker, name: u.name, chg: info.chg || 0 };
+    });
+
+    const core = sector.aTargets.slice(0, 3);
+    const pool = sector.aTargets.slice(3);
+    const aStocks = [];
+    for (const a of core) {
+      const info = aData[a.market.toLowerCase() + a.code] || {};
+      aStocks.push({ code: a.code, name: a.name, chg: info.chg || 0 });
+    }
+    const poolStocks = [];
+    for (const a of pool) {
+      const info = aData[a.market.toLowerCase() + a.code] || {};
+      poolStocks.push({ code: a.code, name: a.name, chg: info.chg || 0 });
+    }
+    poolStocks.sort((a, b) => b.chg - a.chg);
+    aStocks.push(...poolStocks);
+
+    const direction = wp >= 1.5 ? 'up' : wp <= -1.5 ? 'down' : 'neutral';
+    sectors.push({ name: sector.name, weightedChg: wp, direction, usStocks, aStocks });
+  }
+  sectors.sort((a, b) => b.weightedChg - a.weightedChg);
+
+  const counts = {up:0, neutral:0, down:0};
+  sectors.forEach(s => { counts[s.direction]++; });
+
+  document.getElementById('summaryStrip').innerHTML =
+    '<div class="chip up"><strong>▲ ' + counts.up + '</strong> 映射利好</div>' +
+    '<div class="chip mid"><strong>— ' + counts.neutral + '</strong> 映射中性</div>' +
+    '<div class="chip down"><strong>▼ ' + counts.down + '</strong> 映射利空</div>' +
+    '<div class="chip">板块共 ' + sectors.length + ' 个</div>';
+
+  const grid = document.getElementById('sectorGrid');
+  grid.innerHTML = '';
+  for (const sec of sectors) {
+    const dIcon = dirIcon(sec.direction);
+    const wSign = sec.weightedChg >= 0 ? '+' : '';
+    const usItems = sec.usStocks.map(st => {
+      const chgCls = st.chg > 0 ? 'us-chg-up' : st.chg < 0 ? 'us-chg-down' : '';
+      return '<span class="us-item"><span class="us-ticker">' + st.code + '</span><span class="us-name">' + st.name + '</span><span class="us-chg ' + chgCls + '">' + fmtChg(st.chg) + '</span></span>';
+    }).join('');
+    const aItems = sec.aStocks.map(st => '<span class="a-item">' + st.name + '</span>').join('');
+
+    const block = document.createElement('div');
+    block.className = 'sector-block';
+    block.innerHTML =
+      '<div class="sector-header">' +
+        '<span class="name">' + sec.name + '</span>' +
+        '<span class="right"><span class="wchg">' + wSign + fmtNum(sec.weightedChg) + '%</span><span class="mapdir">' + dIcon + '</span></span>' +
+      '</div>' +
+      '<div class="sector-body">' +
+        '<div class="us-section"><div class="us-title">美股</div><div>' + usItems + '</div></div>' +
+        '<div class="a-section"><div class="a-title">A股映射</div><div class="a-list">' + aItems + '</div></div>' +
+      '</div>';
+    grid.appendChild(block);
+  }
+}
+
+async function loadData() {
+  try {
+    await fetchUSData();
+    await fetchAData();
+    render();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loading').textContent = '数据加载失败，请刷新重试';
+    document.getElementById('loading').className = 'error';
+  }
+}
+
+function doExport() {
+  const btn = document.querySelector('.export-btn');
+  btn.style.display = 'none';
+  html2canvas(document.body, {
+    scale: 5,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+    logging: false
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = '美股A股映射雷达_' + todayStr() + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.style.display = '';
+  }).catch(err => {
+    console.error(err);
+    alert('导出失败');
+    btn.style.display = '';
+  });
+}
+
+loadData();setInterval(loadData, 30000);
+
+</script>
+</body>
+</html>

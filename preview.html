@@ -86,7 +86,90 @@ const SECTORS = [
   ]}
 ];
 
-// Placeholder for the rest of the file content
+function getUsChg(ticker) { return usData[ticker]?.chg || 0; }
+function getSectorChg(sector) {
+  const tw = sector.usLeaders.reduce((s, u) => s + (u.weight || 1), 0);
+  let wp = 0;
+  for (const u of sector.usLeaders) { wp += (usData[u.ticker]?.chg || 0) * (u.weight || 1); }
+  return tw > 0 ? wp / tw : 0;
+}
+function getAChg(code) { return aData[code]?.chg || 0; }
+function formatChg(v) { const s = v > 0 ? '+' : ''; return s + v.toFixed(2) + '%'; }
+function chgClass(v) { return v > 0 ? 'up' : (v < 0 ? 'down' : 'flat'); }
+
+let usData = {}, aData = {};
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (const s of SECTORS) {
+    const schg = getSectorChg(s);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-header">
+        <span class="name">${s.name}</span>
+        <span class="chg ${chgClass(schg)}">${formatChg(schg)}</span>
+      </div>
+      <div class="card-body">
+        <div class="group-label">美股龙头</div>
+        <div class="us-row">${s.usLeaders.slice(0,4).map(u => {
+          const chg = getUsChg(u.ticker);
+          return `<div class="us-item"><span class="ticker">${u.ticker}</span><span class="name">${u.name}</span><span class="chg ${chgClass(chg)}">${formatChg(chg)}</span></div>`;
+        }).join('')}</div>
+        <div class="group-label">A股映射</div>
+        <div class="a-grid">${s.aTargets.map(a => {
+          const chg = getAChg(a.code);
+          return `<div class="a-item"><span class="code">${a.code}</span><span class="name">${a.name}</span><span class="chg ${chgClass(chg)}">${formatChg(chg)}</span></div>`;
+        }).join('')}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+}
+
+function loadData() {
+  const usList = [];
+  for (const s of SECTORS) { for (const u of s.usLeaders) { if (!usList.includes(u.ticker)) usList.push(u.ticker); } }
+  const aList = [];
+  for (const s of SECTORS) { for (const a of s.aTargets) { if (!aList.includes(a.code)) aList.push(a.code); } }
+
+  const usBatch = usList.map(t => 'us' + t);
+  const aBatch = aList;
+
+  function fetchBatch(batch, isUs) {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://qt.gtimg.cn/q=' + batch.join(',') + '&pn=1&_=' + Date.now();
+      script.onload = () => {
+        const data = {};
+        for (const item of batch) {
+          const key = isUs ? 'us' + item : item;
+          const raw = window['v_' + key];
+          if (raw) {
+            const parts = raw.split('~');
+            data[item] = { price: parseFloat(parts[3]), chg: parseFloat(parts[32]) };
+          }
+        }
+        resolve(data);
+      };
+      script.onerror = () => resolve({});
+      document.head.appendChild(script);
+    });
+  }
+
+  Promise.all([
+    fetchBatch(usList, true),
+    fetchBatch(aList, false)
+  ]).then(([us, a]) => {
+    usData = us;
+    aData = a;
+    render();
+  });
+}
+
+loadData();
+setInterval(loadData, 30000);
 </script>
 </body>
 </html>

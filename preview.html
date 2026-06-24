@@ -1,1 +1,92 @@
-<placeholder>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US-A 板块映射站</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #f0f2f5; }
+.header { background: #b71c1c; color: #fff; padding: 12px 16px; text-align: center; border-bottom: 3px solid #8e0000; }
+.header h1 { font-size: 20px; margin-bottom: 4px; }
+.header .sub { font-size: 12px; opacity: 0.9; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px; max-width: 1600px; margin: 0 auto; }
+.card { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; }
+.card-header { padding: 8px 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+.card-header .name { font-size: 14px; font-weight: 600; color: #333; }
+.card-header .chg { font-size: 13px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
+.card-header .chg.up { color: #fff; background: #d32f2f; }
+.card-header .chg.down { color: #fff; background: #2e7d32; }
+.card-header .chg.flat { color: #666; background: #e0e0e0; }
+.card-body { padding: 8px 10px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.group-label { font-size: 11px; color: #888; font-weight: 600; margin-bottom: 2px; }
+.us-row { display: flex; gap: 4px; flex-wrap: wrap; }
+.us-item { display: flex; align-items: center; gap: 3px; background: #f5f5f5; padding: 3px 6px; border-radius: 3px; font-size: 11px; }
+.us-item .ticker { font-weight: 600; color: #333; }
+.us-item .name { color: #666; }
+.us-item .chg { font-weight: 700; font-size: 10px; }
+.us-item .chg.up { color: #d32f2f; }
+.us-item .chg.down { color: #2e7d32; }
+.a-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.a-item { display: flex; align-items: center; gap: 3px; background: #fafafa; padding: 3px 5px; border-radius: 3px; font-size: 11px; border-left: 2px solid #b71c1c; }
+.a-item .code { font-weight: 600; color: #b71c1c; font-size: 10px; }
+.a-item .name { color: #444; font-size: 11px; }
+.a-item .chg { font-size: 10px; font-weight: 600; }
+.a-item .chg.up { color: #d32f2f; }
+.a-item .chg.down { color: #2e7d32; }
+.note-bar { background: #fff8e1; color: #666; font-size: 11px; padding: 6px 12px; text-align: center; border-bottom: 1px solid #ffe082; }
+@media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+<div class="header">
+<h1>US-A 板块映射站</h1>
+<div class="sub">美股已收盘（T-1）丨 A股尚未开盘</div>
+</div>
+<div class="note-bar">板块涨跌幅为该板块美股前十龙头加权平均</div>
+<div class="grid" id="grid"></div>
+
+<script>
+const SECTORS = [
+  {"id":"optical-module","name":"光模块","sectorIndex":"usIGN","usLeaders":[
+    {"ticker":"COHR","name":"高意","weight":0.25},{"ticker":"LITE","name":"鲁门特姆","weight":0.23},
+    {"ticker":"AVGO","name":"博通","weight":0.18},{"ticker":"CSCO","name":"思科","weight":0.12},
+    {"ticker":"CIEN","name":"Ciena","weight":0.08},{"ticker":"JBL","name":"捷普","weight":0.06},
+    {"ticker":"FN","name":"菲尼萨","weight":0.04},{"ticker":"MTSI","name":"MACOM","weight":0.02},
+    {"ticker":"AAOI","name":"AOI","weight":0.015},{"ticker":"MXL","name":"MaxLinear","weight":0.005}
+  ],"aTargets":[
+    {"code":"sz300308","name":"中际旭创"},{"code":"sz300394","name":"天孚通信"},{"code":"sz300502","name":"新易盛"},{"code":"sh688205","name":"德科立"},
+    {"code":"sh688498","name":"源杰科技"},{"code":"sh688170","name":"德龙激光"},{"code":"sh688195","name":"腾景科技"},{"code":"sz300570","name":"太辰光"},
+    {"code":"sz300548","name":"长盈通"},{"code":"sh688143","name":"长光华芯"}
+  ]},
+  {"id":"cpo","name":"CPO","sectorIndex":"usIGN","usLeaders":[
+    {"ticker":"AVGO","name":"博通","weight":0.25},{"ticker":"COHR","name":"高意","weight":0.22},
+    {"ticker":"MRVL","name":"迈威尔","weight":0.20},{"ticker":"NVDA","name":"英伟达","weight":0.15},
+    {"ticker":"LITE","name":"鲁门特姆","weight":0.08},{"ticker":"AMAT","name":"应用材料","weight":0.05},
+    {"ticker":"TSM","name":"台积电","weight":0.03},{"ticker":"INTC","name":"英特尔","weight":0.015},
+    {"ticker":"ANET","name":"Arista","weight":0.005},{"ticker":"AMD","name":"AMD","weight":0.005}
+  ],"aTargets":[
+    {"code":"sz300308","name":"中际旭创"},{"code":"sh688205","name":"德科立"},{"code":"sh688498","name":"源杰科技"},{"code":"sz300502","name":"新易盛"},
+    {"code":"sh688143","name":"长光华芯"},{"code":"sz300570","name":"太辰光"},{"code":"sh688170","name":"德龙激光"},{"code":"sh688195","name":"腾景科技"},
+    {"code":"sz300394","name":"天孚通信"},{"code":"sh688025","name":"杰普特"}
+  ]},
+  {"id":"copper","name":"铜","sectorIndex":"usIGN","usLeaders":[
+    {"ticker":"SCCO","name":"南方铜业","weight":0.30},{"ticker":"FCX","name":"自由港","weight":0.25},
+    {"ticker":"TECK","name":"泰克资源","weight":0.20},{"ticker":"WPM","name":"Wheaton","weight":0.10},
+    {"ticker":"NEM","name":"纽蒙特","weight":0.05},{"ticker":"BHP","name":"必和必拓","weight":0.04},
+    {"ticker":"RIO","name":"力拓","weight":0.03},{"ticker":"VALE","name":"淡水河谷","weight":0.02},
+    {"ticker":"GLNCY","name":"嘉能可","weight":0.005},{"ticker":"KGCHY","name":"KGHM","weight":0.005}
+  ],"aTargets":[
+    {"code":"sh600362","name":"江西铜业"},{"code":"sh600547","name":"山东黄金"},{"code":"sh601899","name":"紫金矿业"},{"code":"sh600489","name":"中金黄金"},
+    {"code":"sh601168","name":"西部矿业"},{"code":"sh600497","name":"驰宏锌锗"},{"code":"sh601020","name":"华钰矿业"},{"code":"sh603993","name":"洛阳钼业"},
+    {"code":"sz000878","name":"云南铜业"},{"code":"sh600219","name":"南山铝业"}
+  ]}
+];
+
+// Placeholder for the rest of the file content
+</script>
+</body>
+</html>

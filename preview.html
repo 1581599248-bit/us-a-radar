@@ -3,172 +3,284 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>US-A 板块映射站</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>美股-A股映射雷达站</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #f0f2f5; }
-.header { background: #b71c1c; color: #fff; padding: 12px 16px; text-align: center; border-bottom: 3px solid #8e0000; }
-.header h1 { font-size: 20px; margin-bottom: 4px; }
-.header .sub { font-size: 12px; opacity: 0.9; }
-.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px; max-width: 1600px; margin: 0 auto; }
-.card { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; }
-.card-header { padding: 8px 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
-.card-header .name { font-size: 14px; font-weight: 600; color: #333; }
-.card-header .chg { font-size: 13px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
-.card-header .chg.up { color: #fff; background: #d32f2f; }
-.card-header .chg.down { color: #fff; background: #2e7d32; }
-.card-header .chg.flat { color: #666; background: #e0e0e0; }
-.card-body { padding: 8px 10px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.group-label { font-size: 11px; color: #888; font-weight: 600; margin-bottom: 2px; }
-.us-row { display: flex; gap: 4px; flex-wrap: wrap; }
-.us-item { display: flex; align-items: center; gap: 3px; background: #f5f5f5; padding: 3px 6px; border-radius: 3px; font-size: 11px; }
-.us-item .ticker { font-weight: 600; color: #333; }
-.us-item .name { color: #666; }
-.us-item .chg { font-weight: 700; font-size: 10px; }
-.us-item .chg.up { color: #d32f2f; }
-.us-item .chg.down { color: #2e7d32; }
-.a-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-.a-item { display: flex; align-items: center; gap: 3px; background: #fafafa; padding: 3px 5px; border-radius: 3px; font-size: 11px; border-left: 2px solid #b71c1c; }
-.a-item .code { font-weight: 600; color: #b71c1c; font-size: 10px; }
-.a-item .name { color: #444; font-size: 11px; }
-.a-item .chg { font-size: 10px; font-weight: 600; }
-.a-item .chg.up { color: #d32f2f; }
-.a-item .chg.down { color: #2e7d32; }
-.note-bar { background: #fff8e1; color: #666; font-size: 11px; padding: 6px 12px; text-align: center; border-bottom: 1px solid #ffe082; }
-@media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Microsoft YaHei,SimHei,sans-serif;}
+html,body{width:100%;min-height:100vh;background:#fff;}
+body{font-size:8px;line-height:1;color:#1a1a1a;}
+.page-header{background:linear-gradient(180deg,#b71c1c 0%,#8e0000 100%);color:#fff;padding:3px 5px;text-align:center;border-bottom:2px solid #7f0000;}
+.page-header h1{font-size:13px;font-weight:700;margin:0;line-height:1.3;}
+.page-header .sub{font-size:8px;opacity:0.95;margin-top:1px;}
+.page-header .time-bar{font-size:8px;margin-top:1px;opacity:0.9;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+.page-header .time-bar span{background:rgba(255,255,255,0.18);padding:1px 4px;border-radius:1px;}
+.index-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px 4px;background:#fafafa;border-bottom:1px solid #e0e0e0;}
+.index-card{border:1px solid #e0e0e0;background:#fff;padding:2px 2px;text-align:center;}
+.index-card .pair{font-size:8px;font-weight:700;color:#b71c1c;line-height:1.1;}
+.index-card .name{font-size:7px;color:#616161;line-height:1.1;margin-top:1px;}
+.index-card .chg{font-size:8px;font-weight:700;line-height:1.1;margin-top:1px;}
+.index-card .chg.up{color:#c62828;}
+.index-card .chg.down{color:#2e7d32;}
+.index-card .a-chg{font-size:7px;color:#757575;line-height:1.1;margin-top:1px;}
+.summary-strip{display:flex;gap:2px;padding:2px 4px;background:#fff;border-bottom:1px solid #e0e0e0;font-size:8px;justify-content:center;flex-wrap:wrap;}
+.summary-strip .chip{padding:1px 3px;border:1px solid #ddd;background:#fff;white-space:nowrap;border-radius:1px;}
+.summary-strip .chip.up{color:#c62828;border-color:#ffcdd2;background:#ffebee;}
+.summary-strip .chip.mid{color:#757575;border-color:#e0e0e0;background:#fafafa;}
+.summary-strip .chip.down{color:#2e7d32;border-color:#c8e6c9;background:#e8f5e9;}
+.note-bar{text-align:center;padding:2px 4px;background:#fff;border-bottom:1px solid #e0e0e0;font-size:7px;color:#616161;}
+.sector-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px 4px;}
+.sector-block{border:1px solid #ddd;background:#fff;border-radius:2px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
+.sector-header{display:flex;align-items:center;justify-content:space-between;padding:1px 2px;background:#b71c1c;color:#fff;font-size:6px;font-weight:700;line-height:1.2;min-height:12px;}
+.sector-header .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;margin-right:2px;}
+.sector-header .right{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+.sector-header .wchg{font-weight:700;font-size:6px;white-space:nowrap;}
+.sector-header .mapdir{font-weight:700;padding:0 1px;border:1px solid rgba(255,255,255,0.5);font-size:6px;min-width:11px;text-align:center;border-radius:1px;}
+.sector-body{padding:2px 4px;}
+.us-section{font-size:7px;line-height:1.4;padding-bottom:2px;border-bottom:1px dashed #eee;margin-bottom:2px;}
+.us-title{color:#b71c1c;font-weight:700;font-size:7px;margin-bottom:1px;}
+.us-item{display:inline-block;margin-right:3px;white-space:nowrap;}
+.us-ticker{color:#b71c1c;font-weight:700;}
+.us-name{color:#424242;}
+.us-chg{font-weight:700;font-size:7px;}
+.us-chg-up{color:#c62828;}
+.us-chg-down{color:#2e7d32;}
+.a-section{font-size:7px;line-height:1.4;}
+.a-title{color:#1565c0;font-weight:700;font-size:7px;margin-bottom:1px;}
+.a-list{display:grid;grid-template-columns:repeat(2,1fr);gap:0 4px;}
+.a-item{white-space:nowrap;color:#333;font-size:7px;}
+.loading{text-align:center;padding:20px;font-size:12px;color:#999;}
+.error{text-align:center;padding:20px;font-size:10px;color:#c62828;}
+.export-btn{position:fixed;bottom:10px;right:10px;z-index:999;padding:6px 12px;background:#b71c1c;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.2);}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
-<div class="header">
-<h1>US-A 板块映射站</h1>
-<div class="sub">美股已收盘（T-1）丨 A股尚未开盘</div>
+
+<div class="page-header" id="pageHeader">
+<h1>美股昨夜涨跌 → A股今日映射指引</h1>
+<div class="sub" id="subLine">加载中...</div>
+<div class="time-bar" id="datesLine"></div>
 </div>
-<div class="note-bar">板块涨跌幅为该板块美股前十龙头加权平均</div>
-<div class="grid" id="grid"></div>
+
+<div class="index-bar" id="indexBar"></div>
+<div class="note-bar" id="noteBar">板块涨跌幅为该板块美股前十龙头加权平均丨 A股映射标的不构成投资建议</div>
+<div class="summary-strip" id="summaryStrip"></div>
+<div class="loading" id="loading">正在加载实时数据...</div>
+<div class="sector-grid" id="sectorGrid" style="display:none"></div>
+<button class="export-btn" onclick="doExport()">📷 导出 JPG</button>
 
 <script>
-const SECTORS = [
-  {"id":"optical-module","name":"光模块","sectorIndex":"usIGN","usLeaders":[
-    {"ticker":"COHR","name":"高意","weight":0.25},{"ticker":"LITE","name":"鲁门特姆","weight":0.23},
-    {"ticker":"AVGO","name":"博通","weight":0.18},{"ticker":"CSCO","name":"思科","weight":0.12},
-    {"ticker":"CIEN","name":"Ciena","weight":0.08},{"ticker":"JBL","name":"捷普","weight":0.06},
-    {"ticker":"FN","name":"菲尼萨","weight":0.04},{"ticker":"MTSI","name":"MACOM","weight":0.02},
-    {"ticker":"AAOI","name":"AOI","weight":0.015},{"ticker":"MXL","name":"MaxLinear","weight":0.005}
-  ],"aTargets":[
-    {"code":"sz300308","name":"中际旭创"},{"code":"sz300394","name":"天孚通信"},{"code":"sz300502","name":"新易盛"},{"code":"sh688205","name":"德科立"},
-    {"code":"sh688498","name":"源杰科技"},{"code":"sh688170","name":"德龙激光"},{"code":"sh688195","name":"腾景科技"},{"code":"sz300570","name":"太辰光"},
-    {"code":"sz300548","name":"长盈通"},{"code":"sh688143","name":"长光华芯"}
-  ]},
-  {"id":"cpo","name":"CPO","sectorIndex":"usIGN","usLeaders":[
-    {"ticker":"AVGO","name":"博通","weight":0.25},{"ticker":"COHR","name":"高意","weight":0.22},
-    {"ticker":"MRVL","name":"迈威尔","weight":0.20},{"ticker":"NVDA","name":"英伟达","weight":0.15},
-    {"ticker":"LITE","name":"鲁门特姆","weight":0.08},{"ticker":"AMAT","name":"应用材料","weight":0.05},
-    {"ticker":"TSM","name":"台积电","weight":0.03},{"ticker":"INTC","name":"英特尔","weight":0.015},
-    {"ticker":"ANET","name":"Arista","weight":0.005},{"ticker":"AMD","name":"AMD","weight":0.005}
-  ],"aTargets":[
-    {"code":"sz300308","name":"中际旭创"},{"code":"sh688205","name":"德科立"},{"code":"sh688498","name":"源杰科技"},{"code":"sz300502","name":"新易盛"},
-    {"code":"sh688143","name":"长光华芯"},{"code":"sz300570","name":"太辰光"},{"code":"sh688170","name":"德龙激光"},{"code":"sh688195","name":"腾景科技"},
-    {"code":"sz300394","name":"天孚通信"},{"code":"sh688025","name":"杰普特"}
-  ]},
-  {"id":"copper","name":"铜","sectorIndex":"usIGN","usLeaders":[
-    {"ticker":"SCCO","name":"南方铜业","weight":0.30},{"ticker":"FCX","name":"自由港","weight":0.25},
-    {"ticker":"TECK","name":"泰克资源","weight":0.20},{"ticker":"WPM","name":"Wheaton","weight":0.10},
-    {"ticker":"NEM","name":"纽蒙特","weight":0.05},{"ticker":"BHP","name":"必和必拓","weight":0.04},
-    {"ticker":"RIO","name":"力拓","weight":0.03},{"ticker":"VALE","name":"淡水河谷","weight":0.02},
-    {"ticker":"GLNCY","name":"嘉能可","weight":0.005},{"ticker":"KGCHY","name":"KGHM","weight":0.005}
-  ],"aTargets":[
-    {"code":"sh600362","name":"江西铜业"},{"code":"sh600547","name":"山东黄金"},{"code":"sh601899","name":"紫金矿业"},{"code":"sh600489","name":"中金黄金"},
-    {"code":"sh601168","name":"西部矿业"},{"code":"sh600497","name":"驰宏锌锗"},{"code":"sh601020","name":"华钰矿业"},{"code":"sh603993","name":"洛阳钼业"},
-    {"code":"sz000878","name":"云南铜业"},{"code":"sh600219","name":"南山铝业"}
-  ]}
+let SECTORS = [];
+const INDEX_CONFIG = [
+{usTicker:"usIXIC",usName:"NASDAQ",usLabel:"纳斯达克",aCode:"sz399006",aName:"创业板指",aLabel:"创业板"},
+{usTicker:"usSOXX",usName:"SOX(ETF)",usLabel:"费城半导体",aCode:"sh000688",aName:"科创50",aLabel:"科创50"},
+{usTicker:"usINX",usName:"SPX",usLabel:"标普500",aCode:"sh000300",aName:"沪深300",aLabel:"沪深300"},
+{usTicker:"usDJI",usName:"DJI",usLabel:"道琼斯",aCode:"sh000001",aName:"上证指数",aLabel:"上证"}
 ];
 
-function getUsChg(ticker) { return usData[ticker]?.chg || 0; }
-function getSectorChg(sector) {
-  const tw = sector.usLeaders.reduce((s, u) => s + (u.weight || 1), 0);
-  let wp = 0;
-  for (const u of sector.usLeaders) { wp += (usData[u.ticker]?.chg || 0) * (u.weight || 1); }
-  return tw > 0 ? wp / tw : 0;
-}
-function getAChg(code) { return aData[code]?.chg || 0; }
-function formatChg(v) { const s = v > 0 ? '+' : ''; return s + v.toFixed(2) + '%'; }
-function chgClass(v) { return v > 0 ? 'up' : (v < 0 ? 'down' : 'flat'); }
+var usData = {};
+var aData = {};
 
-let usData = {}, aData = {};
+const fmtChg = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+const fmtNum = (n) => n.toFixed(2);
+const dirIcon = (d) => d === 'up' ? '▲' : d === 'down' ? '▼' : '—';
 
-function render() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  for (const s of SECTORS) {
-    const schg = getSectorChg(s);
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="card-header">
-        <span class="name">${s.name}</span>
-        <span class="chg ${chgClass(schg)}">${formatChg(schg)}</span>
-      </div>
-      <div class="card-body">
-        <div class="group-label">美股龙头</div>
-        <div class="us-row">${s.usLeaders.slice(0,4).map(u => {
-          const chg = getUsChg(u.ticker);
-          return `<div class="us-item"><span class="ticker">${u.ticker}</span><span class="name">${u.name}</span><span class="chg ${chgClass(chg)}">${formatChg(chg)}</span></div>`;
-        }).join('')}</div>
-        <div class="group-label">A股映射</div>
-        <div class="a-grid">${s.aTargets.map(a => {
-          const chg = getAChg(a.code);
-          return `<div class="a-item"><span class="code">${a.code}</span><span class="name">${a.name}</span><span class="chg ${chgClass(chg)}">${formatChg(chg)}</span></div>`;
-        }).join('')}</div>
-      </div>
-    `;
-    grid.appendChild(card);
-  }
-}
+const todayStr = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 
-function loadData() {
-  const usList = [];
-  for (const s of SECTORS) { for (const u of s.usLeaders) { if (!usList.includes(u.ticker)) usList.push(u.ticker); } }
-  const aList = [];
-  for (const s of SECTORS) { for (const a of s.aTargets) { if (!aList.includes(a.code)) aList.push(a.code); } }
-
-  const usBatch = usList.map(t => 'us' + t);
-  const aBatch = aList;
-
-  function fetchBatch(batch, isUs) {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://qt.gtimg.cn/q=' + batch.join(',') + '&pn=1&_=' + Date.now();
-      script.onload = () => {
-        const data = {};
-        for (const item of batch) {
-          const key = isUs ? 'us' + item : item;
-          const raw = window['v_' + key];
-          if (raw) {
-            const parts = raw.split('~');
-            data[item] = { price: parseFloat(parts[3]), chg: parseFloat(parts[32]) };
-          }
-        }
-        resolve(data);
-      };
-      script.onerror = () => resolve({});
-      document.head.appendChild(script);
-    });
-  }
-
-  Promise.all([
-    fetchBatch(usList, true),
-    fetchBatch(aList, false)
-  ]).then(([us, a]) => {
-    usData = us;
-    aData = a;
-    render();
+function fetchScript(url) {
+  return new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = () => { setTimeout(resolve, 500); };
+    s.onerror = () => { setTimeout(resolve, 500); };
+    document.head.appendChild(s);
   });
 }
 
-loadData();
+async function fetchUSData() {
+  const tickers = new Set();
+  for (const s of SECTORS) {
+    for (const u of s.usLeaders) tickers.add('us' + u.ticker);
+    if (s.sectorIndex) tickers.add(s.sectorIndex);
+  }
+  for (const idx of INDEX_CONFIG) tickers.add(idx.usTicker);
+  const arr = [...tickers];
+  const BATCH = 60;
+  for (let i = 0; i < arr.length; i += BATCH) {
+    const batch = arr.slice(i, i + BATCH);
+    await fetchScript('https://qt.gtimg.cn/q=' + batch.join(','));
+    for (const t of batch) {
+      const key = 'v_' + t;
+      if (window[key]) {
+        const f = window[key].split('~');
+        if (f.length >= 5 && f[3] && f[4]) {
+          const price = parseFloat(f[3]), prev = parseFloat(f[4]);
+          const rawTicker = t.startsWith('us') ? t.slice(2) : t;
+          usData[rawTicker] = { price: price, chg: prev ? ((price - prev) / prev * 100) : 0 };
+        }
+      }
+    }
+  }
+}
+
+async function fetchAData() {
+  const codes = new Set();
+  for (const s of SECTORS) { for (const a of s.aTargets) codes.add(a.market.toLowerCase() + a.code); }
+  for (const idx of INDEX_CONFIG) codes.add(idx.aCode);
+  const arr = [...codes];
+  const BATCH = 80;
+  for (let i = 0; i < arr.length; i += BATCH) {
+    const batch = arr.slice(i, i + BATCH);
+    await fetchScript('https://qt.gtimg.cn/q=' + batch.join(','));
+    for (const c of batch) {
+      const key = 'v_' + c.toLowerCase();
+      if (window[key]) {
+        const f = window[key].split('~');
+        if (f.length >= 5 && f[3] && f[4]) {
+          const price = parseFloat(f[3]), prev = parseFloat(f[4]);
+          aData[c] = { price: price, chg: prev ? ((price - prev) / prev * 100) : 0 };
+        }
+      }
+    }
+  }
+}
+
+function getSectorChg(sector) {
+  const tw = sector.usLeaders.reduce((s, u) => s + (u.weight || 1), 0);
+  let wp = 0;
+  for (const u of sector.usLeaders) {
+    const info = usData[u.ticker] || {};
+    wp += (info.chg || 0) * (u.weight || 1);
+  }
+  return wp / tw;
+}
+
+function render() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('sectorGrid').style.display = '';
+
+  const now = new Date();
+  const wd = now.getDay();
+  let usLabel, aLabel, usDate, aDate;
+  if (wd === 0) { usDate = yesterdayStr(); aDate = usDate; usLabel = '周五收盘'; aLabel = '周五收盘'; }
+  else if (wd >= 6) { usDate = yesterdayStr(); aDate = usDate; usLabel = '周五收盘'; aLabel = '周五收盘'; }
+  else { usDate = todayStr(); aDate = yesterdayStr(); usLabel = '今日收盘'; aLabel = '昨日收盘'; }
+
+  document.getElementById('subLine').textContent = '美股已收盘（T-1）丨 A股尚未开盘';
+  document.getElementById('datesLine').innerHTML = '<span>美股' + usLabel + ' · ' + usDate + '</span>';
+
+  const idxHtml = INDEX_CONFIG.map(idx => {
+    const u = usData[idx.usTicker.startsWith('us') ? idx.usTicker.slice(2) : idx.usTicker] || {};
+    const a = aData[idx.aCode] || {};
+    const uChg = u.chg || 0;
+    const aChg = a.chg || 0;
+    const cls = uChg > 0 ? 'up' : uChg < 0 ? 'down' : '';
+    const arr = uChg > 0 ? '▲' : uChg < 0 ? '▼' : '—';
+    const aCls = aChg > 0 ? 'up' : aChg < 0 ? 'down' : '';
+    const aArr = aChg > 0 ? '▲' : aChg < 0 ? '▼' : '—';
+    return '<div class="index-card"><div class="pair">' + idx.usName + ' ↔ ' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' vs A股' + idx.aLabel + '</div><div class="chg ' + cls + '">' + arr + ' ' + fmtChg(uChg) + '</div><div class="a-chg ' + aCls + '">A股前日 ' + aArr + fmtChg(aChg) + '</div></div>';
+  }).join('');
+  document.getElementById('indexBar').innerHTML = idxHtml;
+
+  const sectors = [];
+  for (const sector of SECTORS) {
+    const wp = getSectorChg(sector);
+    const usStocks = sector.usLeaders.slice(0, 4).map(u => {
+      const info = usData[u.ticker] || {};
+      return { code: u.ticker, name: u.name, chg: info.chg || 0 };
+    });
+
+    const core = sector.aTargets.slice(0, 3);
+    const pool = sector.aTargets.slice(3);
+    const aStocks = [];
+    for (const a of core) {
+      const info = aData[a.market.toLowerCase() + a.code] || {};
+      aStocks.push({ code: a.code, name: a.name, chg: info.chg || 0 });
+    }
+    const poolStocks = [];
+    for (const a of pool) {
+      const info = aData[a.market.toLowerCase() + a.code] || {};
+      poolStocks.push({ code: a.code, name: a.name, chg: info.chg || 0 });
+    }
+    poolStocks.sort((a, b) => b.chg - a.chg);
+    aStocks.push(...poolStocks);
+
+    const direction = wp >= 1.5 ? 'up' : wp <= -1.5 ? 'down' : 'neutral';
+    sectors.push({ name: sector.name, weightedChg: wp, direction, usStocks, aStocks });
+  }
+  sectors.sort((a, b) => b.weightedChg - a.weightedChg);
+
+  const counts = {up:0, neutral:0, down:0};
+  sectors.forEach(s => { counts[s.direction]++; });
+
+  document.getElementById('summaryStrip').innerHTML =
+    '<div class="chip up"><strong>▲ ' + counts.up + '</strong> 映射利好</div>' +
+    '<div class="chip mid"><strong>— ' + counts.neutral + '</strong> 映射中性</div>' +
+    '<div class="chip down"><strong>▼ ' + counts.down + '</strong> 映射利空</div>' +
+    '<div class="chip">板块共 ' + sectors.length + ' 个</div>';
+
+  const grid = document.getElementById('sectorGrid');
+  grid.innerHTML = '';
+  for (const sec of sectors) {
+    const dIcon = dirIcon(sec.direction);
+    const wSign = sec.weightedChg >= 0 ? '+' : '';
+    const usItems = sec.usStocks.map(st => {
+      const chgCls = st.chg > 0 ? 'us-chg-up' : st.chg < 0 ? 'us-chg-down' : '';
+      return '<span class="us-item"><span class="us-ticker">' + st.code + '</span><span class="us-name">' + st.name + '</span><span class="us-chg ' + chgCls + '">' + fmtChg(st.chg) + '</span></span>';
+    }).join('');
+    const aItems = sec.aStocks.map(st => '<span class="a-item">' + st.name + '</span>').join('');
+
+    const block = document.createElement('div');
+    block.className = 'sector-block';
+    block.innerHTML =
+      '<div class="sector-header">' +
+        '<span class="name">' + sec.name + '</span>' +
+        '<span class="right"><span class="wchg">' + wSign + fmtNum(sec.weightedChg) + '%</span><span class="mapdir">' + dIcon + '</span></span>' +
+      '</div>' +
+      '<div class="sector-body">' +
+        '<div class="us-section"><div class="us-title">美股</div><div>' + usItems + '</div></div>' +
+        '<div class="a-section"><div class="a-title">A股映射</div><div class="a-list">' + aItems + '</div></div>' +
+      '</div>';
+    grid.appendChild(block);
+  }
+}
+
+async function loadData() {
+  try {
+    await fetchUSData();
+    await fetchAData();
+    render();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loading').textContent = '数据加载失败，请刷新重试';
+    document.getElementById('loading').className = 'error';
+  }
+}
+
+function doExport() {
+  const btn = document.querySelector('.export-btn');
+  btn.style.display = 'none';
+  html2canvas(document.body, {
+    scale: 5,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+    logging: false
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = '美股A股映射雷达_' + todayStr() + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.style.display = '';
+  }).catch(err => {
+    console.error(err);
+    alert('导出失败');
+    btn.style.display = '';
+  });
+}
+
+fetch('data.json').then(r=>r.json()).then(d=>{SECTORS=d;loadData();}).catch(()=>{document.getElementById('loading').textContent='数据加载失败';});
 setInterval(loadData, 30000);
 </script>
 </body>

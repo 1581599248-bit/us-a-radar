@@ -280,7 +280,7 @@ function doExport() {
   });
 }
 
-fetch('data.json').then(r=>r.json()).then(d=>{SECTORS=d;loadData();}).catch(()=>{document.getElementById('loading').textContent='数据加载失败';});
+Promise.all([fetch('sectors_1.json').then(r=>r.json()),fetch('sectors_2.json').then(r=>r.json()),fetch('sectors_3.json').then(r=>r.json())]).then(([d1,d2,d3])=>{SECTORS=[...d1,...d2,...d3];loadData();}).catch(()=>{document.getElementById('loading').textContent='数据加载失败';});
 setInterval(loadData, 30000);
 </script>
 </body>

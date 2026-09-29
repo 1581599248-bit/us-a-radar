@@ -63,7 +63,7 @@ body{font-size:8px;line-height:1;color:#1a1a1a;}
 </div>
 
 <div class="index-bar" id="indexBar"></div>
-<div class="note-bar" id="noteBar">板块涨跌幅为该板块美股前十龙头加权平均丨 A股映射标的不构成投资建议</div>
+<div class="note-bar" id="noteBar">板块涨跌幅为所列美股标的按自定义权重计算；A股标的是主题关联，并非涨跌预测</div>
 <div class="summary-strip" id="summaryStrip"></div>
 <div class="loading" id="loading">正在加载实时数据...</div>
 <div class="sector-grid" id="sectorGrid" style="display:none"></div>
@@ -74,7 +74,6 @@ const SECTORS = [
   {
     "id": "gpu",
     "name": "GPU",
-    "sectorIndex": "usSOXX",
     "usLeaders": [
       {
         "ticker": "NVDA",
@@ -159,18 +158,6 @@ const SECTORS = [
         "weight": 0.6
       },
       {
-        "code": "06082",
-        "market": "HK",
-        "name": "壁仞科技",
-        "weight": 0.5
-      },
-      {
-        "code": "09903",
-        "market": "HK",
-        "name": "天数智芯",
-        "weight": 0.5
-      },
-      {
         "code": "000818",
         "market": "SZ",
         "name": "航锦科技",
@@ -193,7 +180,6 @@ const SECTORS = [
   {
     "id": "cpo",
     "name": "CPO",
-    "sectorIndex": "usXSD",
     "usLeaders": [
       {
         "ticker": "COHR",
@@ -298,7 +284,7 @@ const SECTORS = [
       {
         "code": "300548",
         "market": "SZ",
-        "name": "博创科技",
+        "name": "长芯博创",
         "weight": 0.4
       },
       {
@@ -312,7 +298,6 @@ const SECTORS = [
   {
     "id": "semi-equip",
     "name": "半导体设备",
-    "sectorIndex": "usPSI",
     "usLeaders": [
       {
         "ticker": "ASML",
@@ -423,7 +408,7 @@ const SECTORS = [
       {
         "code": "600641",
         "market": "SH",
-        "name": "万业企业",
+        "name": "先导基电",
         "weight": 0.4
       }
     ]
@@ -431,7 +416,6 @@ const SECTORS = [
   {
     "id": "ic-design",
     "name": "模拟芯片",
-    "sectorIndex": "usSMH",
     "usLeaders": [
       {
         "ticker": "TXN",
@@ -481,71 +465,58 @@ const SECTORS = [
     ],
     "aTargets": [
       {
-        "code": "603501",
-        "market": "SH",
-        "name": "韦尔股份",
-        "weight": 1
-      },
-      {
-        "code": "688008",
-        "market": "SH",
-        "name": "澜起科技",
-        "weight": 0.9
-      },
-      {
-        "code": "002049",
-        "market": "SZ",
-        "name": "紫光国微",
-        "weight": 0.8
-      },
-      {
         "code": "300661",
         "market": "SZ",
         "name": "圣邦股份",
-        "weight": 0.7
+        "weight": 1.0
       },
       {
-        "code": "300782",
-        "market": "SZ",
-        "name": "卓胜微",
+        "code": "688536",
+        "market": "SH",
+        "name": "思瑞浦",
+        "weight": 0.92
+      },
+      {
+        "code": "688052",
+        "market": "SH",
+        "name": "纳芯微",
+        "weight": 0.84
+      },
+      {
+        "code": "688381",
+        "market": "SH",
+        "name": "帝奥微",
+        "weight": 0.76
+      },
+      {
+        "code": "688141",
+        "market": "SH",
+        "name": "杰华特",
+        "weight": 0.68
+      },
+      {
+        "code": "688508",
+        "market": "SH",
+        "name": "芯朋微",
         "weight": 0.6
       },
       {
-        "code": "688099",
+        "code": "688798",
         "market": "SH",
-        "name": "晶晨股份",
-        "weight": 0.5
+        "name": "艾为电子",
+        "weight": 0.52
       },
       {
-        "code": "603893",
+        "code": "688484",
         "market": "SH",
-        "name": "瑞芯微",
-        "weight": 0.5
-      },
-      {
-        "code": "688608",
-        "market": "SH",
-        "name": "恒玄科技",
-        "weight": 0.4
-      },
-      {
-        "code": "688018",
-        "market": "SH",
-        "name": "乐鑫科技",
-        "weight": 0.4
-      },
-      {
-        "code": "603160",
-        "market": "SH",
-        "name": "汇顶科技",
-        "weight": 0.4
+        "name": "南芯科技",
+        "weight": 0.44
       }
     ]
   },
   {
     "id": "foundry",
     "name": "晶圆制造",
-    "sectorIndex": "usSMH",
     "usLeaders": [
       {
         "ticker": "TSM",
@@ -579,12 +550,6 @@ const SECTORS = [
         "market": "SH",
         "name": "中芯国际",
         "weight": 1
-      },
-      {
-        "code": "01347",
-        "market": "HK",
-        "name": "华虹半导体",
-        "weight": 0.9
       },
       {
         "code": "688249",
@@ -621,25 +586,12 @@ const SECTORS = [
         "market": "SZ",
         "name": "赛微电子",
         "weight": 0.4
-      },
-      {
-        "code": "003026",
-        "market": "SZ",
-        "name": "中晶科技",
-        "weight": 0.4
-      },
-      {
-        "code": "688047",
-        "market": "SH",
-        "name": "龙芯中科",
-        "weight": 0.4
       }
     ]
   },
   {
     "id": "memory",
     "name": "存储",
-    "sectorIndex": "usSOXQ",
     "usLeaders": [
       {
         "ticker": "MU",
@@ -667,24 +619,9 @@ const SECTORS = [
         "weight": 0.0962
       },
       {
-        "ticker": "DELL",
-        "name": "戴尔",
-        "weight": 0.0741
-      },
-      {
-        "ticker": "SMCI",
-        "name": "超微",
-        "weight": 0.0575
-      },
-      {
         "ticker": "RMBS",
         "name": "蓝伯斯",
         "weight": 0.0498
-      },
-      {
-        "ticker": "LITE",
-        "name": "鲁门特姆",
-        "weight": 0.0354
       }
     ],
     "aTargets": [
@@ -697,7 +634,7 @@ const SECTORS = [
       {
         "code": "300223",
         "market": "SZ",
-        "name": "北京君正",
+        "name": "君正股份",
         "weight": 0.9
       },
       {
@@ -737,12 +674,6 @@ const SECTORS = [
         "weight": 0.5
       },
       {
-        "code": "300024",
-        "market": "SZ",
-        "name": "万润科技",
-        "weight": 0.4
-      },
-      {
         "code": "000021",
         "market": "SZ",
         "name": "深科技",
@@ -753,7 +684,6 @@ const SECTORS = [
   {
     "id": "packaging",
     "name": "封测",
-    "sectorIndex": "usFTXL",
     "usLeaders": [
       {
         "ticker": "MTSI",
@@ -872,7 +802,6 @@ const SECTORS = [
   {
     "id": "server",
     "name": "数据中心",
-    "sectorIndex": "usXLK",
     "usLeaders": [
       {
         "ticker": "DELL",
@@ -981,7 +910,6 @@ const SECTORS = [
   {
     "id": "liquid-cooling",
     "name": "液冷",
-    "sectorIndex": "usPAVE",
     "usLeaders": [
       {
         "ticker": "VRT",
@@ -1095,7 +1023,6 @@ const SECTORS = [
   {
     "id": "ai-software",
     "name": "AI软件",
-    "sectorIndex": "usAIQ",
     "usLeaders": [
       {
         "ticker": "MSFT",
@@ -1192,12 +1119,6 @@ const SECTORS = [
         "weight": 0.5
       },
       {
-        "code": "00020",
-        "market": "HK",
-        "name": "商汤-W",
-        "weight": 0.4
-      },
-      {
         "code": "300364",
         "market": "SZ",
         "name": "中文在线",
@@ -1214,7 +1135,6 @@ const SECTORS = [
   {
     "id": "cloud-computing",
     "name": "云计算",
-    "sectorIndex": "usSKYY",
     "usLeaders": [
       {
         "ticker": "MSFT",
@@ -1293,8 +1213,8 @@ const SECTORS = [
         "weight": 0.7
       },
       {
-        "code": "000977",
-        "market": "SZ",
+        "code": "600756",
+        "market": "SH",
         "name": "浪潮软件",
         "weight": 0.6
       },
@@ -1333,7 +1253,6 @@ const SECTORS = [
   {
     "id": "fintech",
     "name": "金融科技",
-    "sectorIndex": "usFINX",
     "usLeaders": [
       {
         "ticker": "V",
@@ -1447,7 +1366,6 @@ const SECTORS = [
   {
     "id": "cybersecurity",
     "name": "网络安全",
-    "sectorIndex": "usCIBR",
     "usLeaders": [
       {
         "ticker": "PANW",
@@ -1529,7 +1447,7 @@ const SECTORS = [
       {
         "code": "300188",
         "market": "SZ",
-        "name": "美亚柏科",
+        "name": "国投智能",
         "weight": 0.5
       },
       {
@@ -1545,7 +1463,7 @@ const SECTORS = [
         "weight": 0.4
       },
       {
-        "code": "300579",
+        "code": "002268",
         "market": "SZ",
         "name": "电科网安",
         "weight": 0.4
@@ -1561,7 +1479,6 @@ const SECTORS = [
   {
     "id": "space",
     "name": "商业航天",
-    "sectorIndex": "usUFO",
     "usLeaders": [
       {
         "ticker": "SPCX",
@@ -1656,7 +1573,7 @@ const SECTORS = [
       {
         "code": "300053",
         "market": "SZ",
-        "name": "欧比特",
+        "name": "航宇微",
         "weight": 0.4
       },
       {
@@ -1670,7 +1587,6 @@ const SECTORS = [
   {
     "id": "optical-module",
     "name": "光模块",
-    "sectorIndex": "usIGN",
     "usLeaders": [
       {
         "ticker": "COHR",
@@ -1763,7 +1679,7 @@ const SECTORS = [
       {
         "code": "300548",
         "market": "SZ",
-        "name": "博创科技",
+        "name": "长芯博创",
         "weight": 0.5
       },
       {
@@ -1779,8 +1695,8 @@ const SECTORS = [
         "weight": 0.4
       },
       {
-        "code": "300789",
-        "market": "SZ",
+        "code": "688205",
+        "market": "SH",
         "name": "德科立",
         "weight": 0.4
       }
@@ -1789,7 +1705,6 @@ const SECTORS = [
   {
     "id": "consumer-electronics",
     "name": "消费电子",
-    "sectorIndex": "usXLK",
     "usLeaders": [
       {
         "ticker": "AAPL",
@@ -1880,25 +1795,12 @@ const SECTORS = [
         "market": "SH",
         "name": "环旭电子",
         "weight": 0.4
-      },
-      {
-        "code": "02382",
-        "market": "HK",
-        "name": "舜宇光学",
-        "weight": 0.4
-      },
-      {
-        "code": "02018",
-        "market": "HK",
-        "name": "瑞声科技",
-        "weight": 0.4
       }
     ]
   },
   {
     "id": "pcb",
     "name": "PCB",
-    "sectorIndex": "usXLI",
     "usLeaders": [
       {
         "ticker": "JBL",
@@ -1926,11 +1828,6 @@ const SECTORS = [
         "weight": 0.086
       },
       {
-        "ticker": "MKSI",
-        "name": "MKS仪器",
-        "weight": 0.078
-      },
-      {
         "ticker": "ROG",
         "name": "罗杰斯",
         "weight": 0.076
@@ -1939,11 +1836,6 @@ const SECTORS = [
         "ticker": "BHE",
         "name": "基准电子",
         "weight": 0.037
-      },
-      {
-        "ticker": "CTS",
-        "name": "CTS电子",
-        "weight": 0.033
       },
       {
         "ticker": "PKE",
@@ -2017,7 +1909,6 @@ const SECTORS = [
   {
     "id": "robotics",
     "name": "人形机器人",
-    "sectorIndex": "usBOTZ",
     "usLeaders": [
       {
         "ticker": "TSLA",
@@ -2126,7 +2017,6 @@ const SECTORS = [
   {
     "id": "auto",
     "name": "汽车整车",
-    "sectorIndex": "usCARZ",
     "usLeaders": [
       {
         "ticker": "TSLA",
@@ -2219,12 +2109,6 @@ const SECTORS = [
         "weight": 0.4
       },
       {
-        "code": "09866",
-        "market": "HK",
-        "name": "蔚来-SW",
-        "weight": 0.4
-      },
-      {
         "code": "000550",
         "market": "SZ",
         "name": "江铃汽车",
@@ -2235,7 +2119,6 @@ const SECTORS = [
   {
     "id": "autonomous",
     "name": "自动驾驶",
-    "sectorIndex": "usIDRV",
     "usLeaders": [
       {
         "ticker": "GOOGL",
@@ -2344,7 +2227,6 @@ const SECTORS = [
   {
     "id": "battery",
     "name": "动力电池",
-    "sectorIndex": "usBATT",
     "usLeaders": [
       {
         "ticker": "TSLA",
@@ -2425,12 +2307,6 @@ const SECTORS = [
         "weight": 0.5
       },
       {
-        "code": "03931",
-        "market": "HK",
-        "name": "中创新航",
-        "weight": 0.5
-      },
-      {
         "code": "300068",
         "market": "SZ",
         "name": "南都电源",
@@ -2453,7 +2329,6 @@ const SECTORS = [
   {
     "id": "new-energy",
     "name": "光伏",
-    "sectorIndex": "usTAN",
     "usLeaders": [
       {
         "ticker": "FSLR",
@@ -2562,7 +2437,6 @@ const SECTORS = [
   {
     "id": "lithium",
     "name": "锂矿",
-    "sectorIndex": "usLIT",
     "usLeaders": [
       {
         "ticker": "ALB",
@@ -2661,7 +2535,6 @@ const SECTORS = [
   {
     "id": "copper",
     "name": "铜",
-    "sectorIndex": "usCOPX",
     "usLeaders": [
       {
         "ticker": "FCX",
@@ -2672,31 +2545,6 @@ const SECTORS = [
         "ticker": "SCCO",
         "name": "南方铜业",
         "weight": 0.2
-      },
-      {
-        "ticker": "HL",
-        "name": "Hecla矿业",
-        "weight": 0.16
-      },
-      {
-        "ticker": "CDE",
-        "name": "Coeur矿业",
-        "weight": 0.14
-      },
-      {
-        "ticker": "NEM",
-        "name": "纽蒙特矿业",
-        "weight": 0.1
-      },
-      {
-        "ticker": "CENX",
-        "name": "世纪铝业",
-        "weight": 0.06
-      },
-      {
-        "ticker": "CLF",
-        "name": "克利夫兰",
-        "weight": 0.04
       },
       {
         "ticker": "MLI",
@@ -2748,12 +2596,6 @@ const SECTORS = [
         "weight": 0.5
       },
       {
-        "code": "000807",
-        "market": "SZ",
-        "name": "白银有色",
-        "weight": 0.4
-      },
-      {
         "code": "002203",
         "market": "SZ",
         "name": "海亮股份",
@@ -2770,7 +2612,6 @@ const SECTORS = [
   {
     "id": "smart-grid",
     "name": "智能电网",
-    "sectorIndex": "usGRID",
     "usLeaders": [
       {
         "ticker": "GEV",
@@ -2858,7 +2699,7 @@ const SECTORS = [
       {
         "code": "601567",
         "market": "SH",
-        "name": "三星医疗",
+        "name": "三星电气",
         "weight": 0.5
       },
       {
@@ -2884,7 +2725,6 @@ const SECTORS = [
   {
     "id": "fiber-optic",
     "name": "光纤光缆",
-    "sectorIndex": "usNXTG",
     "usLeaders": [
       {
         "ticker": "GLW",
@@ -2929,7 +2769,7 @@ const SECTORS = [
     ],
     "aTargets": [
       {
-        "code": "600869",
+        "code": "601869",
         "market": "SH",
         "name": "长飞光纤",
         "weight": 1
@@ -2971,8 +2811,8 @@ const SECTORS = [
         "weight": 0.5
       },
       {
-        "code": "300265",
-        "market": "SZ",
+        "code": "688143",
+        "market": "SH",
         "name": "长盈通",
         "weight": 0.4
       },
@@ -2993,7 +2833,6 @@ const SECTORS = [
   {
     "id": "innovative-drug",
     "name": "创新药",
-    "sectorIndex": "usPPH",
     "usLeaders": [
       {
         "ticker": "LLY",
@@ -3050,12 +2889,6 @@ const SECTORS = [
         "weight": 0.9
       },
       {
-        "code": "01801",
-        "market": "HK",
-        "name": "信达生物",
-        "weight": 0.8
-      },
-      {
         "code": "688506",
         "market": "SH",
         "name": "百利天恒",
@@ -3066,12 +2899,6 @@ const SECTORS = [
         "market": "SH",
         "name": "迪哲医药",
         "weight": 0.6
-      },
-      {
-        "code": "00013",
-        "market": "HK",
-        "name": "和黄医药",
-        "weight": 0.5
       },
       {
         "code": "002422",
@@ -3102,7 +2929,6 @@ const SECTORS = [
   {
     "id": "medical-device",
     "name": "医疗器械",
-    "sectorIndex": "usIHI",
     "usLeaders": [
       {
         "ticker": "ABT",
@@ -3211,17 +3037,11 @@ const SECTORS = [
   {
     "id": "gold",
     "name": "黄金",
-    "sectorIndex": "usGDX",
     "usLeaders": [
       {
         "ticker": "NEM",
         "name": "纽蒙特矿业",
         "weight": 0.28
-      },
-      {
-        "ticker": "FCX",
-        "name": "自由港麦克莫兰",
-        "weight": 0.2
       },
       {
         "ticker": "CDE",
@@ -3232,11 +3052,6 @@ const SECTORS = [
         "ticker": "HL",
         "name": "Hecla矿业",
         "weight": 0.14
-      },
-      {
-        "ticker": "MP",
-        "name": "MP材料",
-        "weight": 0.1
       },
       {
         "ticker": "USAU",
@@ -3320,7 +3135,6 @@ const SECTORS = [
   {
     "id": "consumption",
     "name": "大众消费",
-    "sectorIndex": "usXLP",
     "usLeaders": [
       {
         "ticker": "KO",
@@ -3439,7 +3253,6 @@ const SECTORS = [
   {
     "id": "machinery",
     "name": "机械",
-    "sectorIndex": "usXLI",
     "usLeaders": [
       {
         "ticker": "CAT",
@@ -3558,7 +3371,6 @@ const SECTORS = [
   {
     "id": "agriculture",
     "name": "农业",
-    "sectorIndex": "usMOO",
     "usLeaders": [
       {
         "ticker": "DE",
@@ -3667,7 +3479,6 @@ const SECTORS = [
   {
     "id": "chemical",
     "name": "化工",
-    "sectorIndex": "usXLB",
     "usLeaders": [
       {
         "ticker": "LIN",
@@ -3786,7 +3597,6 @@ const SECTORS = [
   {
     "id": "oil-gas",
     "name": "石油石化",
-    "sectorIndex": "usXLE",
     "usLeaders": [
       {
         "ticker": "XOM",
@@ -3900,7 +3710,6 @@ const SECTORS = [
   {
     "id": "transport",
     "name": "交运",
-    "sectorIndex": "usIYT",
     "usLeaders": [
       {
         "ticker": "UPS",
@@ -4003,12 +3812,6 @@ const SECTORS = [
         "weight": 0.4
       },
       {
-        "code": "02057",
-        "market": "HK",
-        "name": "中通快递",
-        "weight": 0.4
-      },
-      {
         "code": "002120",
         "market": "SZ",
         "name": "韵达股份",
@@ -4019,7 +3822,6 @@ const SECTORS = [
   {
     "id": "coal",
     "name": "煤炭",
-    "sectorIndex": "usKOL",
     "usLeaders": [
       {
         "ticker": "BTU",
@@ -4129,13 +3931,15 @@ const SECTORS = [
 
 const INDEX_CONFIG = [
 {usTicker:"usIXIC",usName:"NASDAQ",usLabel:"纳斯达克",aCode:"sz399006",aName:"创业板指",aLabel:"创业板"},
-{usTicker:"usSOXX",usName:"SOX(ETF)",usLabel:"费城半导体",aCode:"sh000688",aName:"科创50",aLabel:"科创50"},
+{usTicker:"SOX",usName:"SOX",usLabel:"费城半导体指数",aCode:"sh000688",aName:"科创50",aLabel:"科创50"},
 {usTicker:"usINX",usName:"SPX",usLabel:"标普500",aCode:"sh000300",aName:"沪深300",aLabel:"沪深300"},
 {usTicker:"usDJI",usName:"DJI",usLabel:"道琼斯",aCode:"sh000001",aName:"上证指数",aLabel:"上证"}
 ];
 
 var usData = {};
 var aData = {};
+var usQuoteDate = '';
+var aQuoteDate = '';
 
 const fmtChg = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
 const fmtNum = (n) => n.toFixed(2);
@@ -4158,9 +3962,8 @@ async function fetchUSData() {
   const tickers = new Set();
   for (const s of SECTORS) {
     for (const u of s.usLeaders) tickers.add('us' + u.ticker);
-    if (s.sectorIndex) tickers.add(s.sectorIndex);
   }
-  for (const idx of INDEX_CONFIG) tickers.add(idx.usTicker);
+  for (const idx of INDEX_CONFIG) if (idx.usTicker.startsWith('us')) tickers.add(idx.usTicker);
   const arr = [...tickers];
   const BATCH = 60;
   for (let i = 0; i < arr.length; i += BATCH) {
@@ -4174,10 +3977,21 @@ async function fetchUSData() {
           const price = parseFloat(f[3]), prev = parseFloat(f[4]);
           const rawTicker = t.startsWith('us') ? t.slice(2) : t;
           usData[rawTicker] = { price: price, chg: prev ? ((price - prev) / prev * 100) : 0 };
+          if (rawTicker === 'IXIC' && /^\d{4}-\d{2}-\d{2}/.test(f[30] || '')) usQuoteDate = f[30].slice(0, 10);
         }
       }
     }
   }
+  // SOX is the actual Nasdaq PHLX index, updated after the US close by
+  // GitHub Actions. A stale value must never masquerade as today's move.
+  try {
+    const response = await fetch('/sox.json?t=' + Date.now(), {cache:'no-store'});
+    if (!response.ok) throw new Error('SOX data unavailable');
+    const sox = await response.json();
+    if (sox.symbol === 'SOX' && sox.date === usQuoteDate && Number.isFinite(sox.changePercent)) {
+      usData.SOX = {price: sox.close, chg: sox.changePercent};
+    } else delete usData.SOX;
+  } catch (err) { delete usData.SOX; console.warn(err); }
 }
 
 async function fetchAData() {
@@ -4195,7 +4009,8 @@ async function fetchAData() {
         const f = window[key].split('~');
         if (f.length >= 5 && f[3] && f[4]) {
           const price = parseFloat(f[3]), prev = parseFloat(f[4]);
-          aData[c] = { price: price, chg: prev ? ((price - prev) / prev * 100) : 0 };
+          aData[c] = { price: price, name: f[1], chg: prev ? ((price - prev) / prev * 100) : 0 };
+          if (c === 'sz399006' && /^\d{8}/.test(f[30] || '')) aQuoteDate = f[30].slice(0, 4) + '-' + f[30].slice(4, 6) + '-' + f[30].slice(6, 8);
         }
       }
     }
@@ -4216,26 +4031,22 @@ function render() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('sectorGrid').style.display = '';
 
-  const now = new Date();
-  const wd = now.getDay();
-  let usLabel, aLabel, usDate, aDate;
-  if (wd === 0) { usDate = yesterdayStr(); aDate = usDate; usLabel = '周五收盘'; aLabel = '周五收盘'; }
-  else if (wd >= 6) { usDate = yesterdayStr(); aDate = usDate; usLabel = '周五收盘'; aLabel = '周五收盘'; }
-  else { usDate = todayStr(); aDate = yesterdayStr(); usLabel = '今日收盘'; aLabel = '昨日收盘'; }
+  const usDate = usQuoteDate || '日期待核实';
+  const aDate = aQuoteDate || '日期待核实';
 
-  document.getElementById('subLine').textContent = '美股已收盘（T-1）丨 A股尚未开盘';
-  document.getElementById('datesLine').innerHTML = '<span>美股' + usLabel + ' · ' + usDate + '</span>';
+  document.getElementById('subLine').textContent = '美股板块表现与A股主题关联';
+  document.getElementById('datesLine').innerHTML = '<span>美股行情 · ' + usDate + '</span><span>A股行情 · ' + aDate + '</span>';
 
   const idxHtml = INDEX_CONFIG.map(idx => {
     const u = usData[idx.usTicker.startsWith('us') ? idx.usTicker.slice(2) : idx.usTicker] || {};
     const a = aData[idx.aCode] || {};
-    const uChg = u.chg || 0;
+    const uChg = Number.isFinite(u.chg) ? u.chg : null;
     const aChg = a.chg || 0;
     const cls = uChg > 0 ? 'up' : uChg < 0 ? 'down' : '';
     const arr = uChg > 0 ? '▲' : uChg < 0 ? '▼' : '—';
     const aCls = aChg > 0 ? 'up' : aChg < 0 ? 'down' : '';
     const aArr = aChg > 0 ? '▲' : aChg < 0 ? '▼' : '—';
-    return '<div class="index-card"><div class="pair">' + idx.usName + ' ↔ ' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' vs A股' + idx.aLabel + '</div><div class="chg ' + cls + '">' + arr + ' ' + fmtChg(uChg) + '</div><div class="a-chg ' + aCls + '">A股前日 ' + aArr + fmtChg(aChg) + '</div></div>';
+    return '<div class="index-card"><div class="pair">' + idx.usName + ' ↔ ' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' vs A股' + idx.aLabel + '</div><div class="chg ' + cls + '">' + (uChg === null ? '数据暂缺' : arr + ' ' + fmtChg(uChg)) + '</div><div class="a-chg ' + aCls + '">A股 ' + aArr + fmtChg(aChg) + '</div></div>';
   }).join('');
   document.getElementById('indexBar').innerHTML = idxHtml;
 
@@ -4244,7 +4055,7 @@ function render() {
     const wp = getSectorChg(sector);
     const usStocks = sector.usLeaders.slice(0, 4).map(u => {
       const info = usData[u.ticker] || {};
-      return { code: u.ticker, name: u.name, chg: info.chg || 0 };
+    return { code: u.ticker, name: u.name, chg: info.chg || 0 };
     });
 
     const core = sector.aTargets.slice(0, 3);
@@ -4252,12 +4063,12 @@ function render() {
     const aStocks = [];
     for (const a of core) {
       const info = aData[a.market.toLowerCase() + a.code] || {};
-      aStocks.push({ code: a.code, name: a.name, chg: info.chg || 0 });
+      aStocks.push({ code: a.code, name: info.name || a.name, chg: info.chg || 0 });
     }
     const poolStocks = [];
     for (const a of pool) {
       const info = aData[a.market.toLowerCase() + a.code] || {};
-      poolStocks.push({ code: a.code, name: a.name, chg: info.chg || 0 });
+      poolStocks.push({ code: a.code, name: info.name || a.name, chg: info.chg || 0 });
     }
     poolStocks.sort((a, b) => b.chg - a.chg);
     aStocks.push(...poolStocks);
@@ -4271,9 +4082,9 @@ function render() {
   sectors.forEach(s => { counts[s.direction]++; });
 
   document.getElementById('summaryStrip').innerHTML =
-    '<div class="chip up"><strong>▲ ' + counts.up + '</strong> 映射利好</div>' +
-    '<div class="chip mid"><strong>— ' + counts.neutral + '</strong> 映射中性</div>' +
-    '<div class="chip down"><strong>▼ ' + counts.down + '</strong> 映射利空</div>' +
+    '<div class="chip up"><strong>▲ ' + counts.up + '</strong> 美股板块偏强</div>' +
+    '<div class="chip mid"><strong>— ' + counts.neutral + '</strong> 美股板块平稳</div>' +
+    '<div class="chip down"><strong>▼ ' + counts.down + '</strong> 美股板块偏弱</div>' +
     '<div class="chip">板块共 ' + sectors.length + ' 个</div>';
 
   const grid = document.getElementById('sectorGrid');

@@ -1,5 +1,10 @@
 name: Update SOX index quote
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-sox.yml'
+      - 'scripts/update_sox.py'
   schedule:
     # Every five minutes across US summer and winter trading hours.
     - cron: '*/5 13-23 * * 1-5'

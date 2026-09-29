@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Save the actual PHLX Semiconductor Sector Index close for the static site."""
+"""Save the actual PHLX Semiconductor Sector Index quote for the static site."""
 import json
 import re
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 SOURCE = 'https://hq.sinajs.cn/list=gb_sox'
@@ -27,7 +27,13 @@ if close <= 0 or not -30 < change_percent < 30:
     raise RuntimeError('Invalid SOX price or daily change')
 result = {'symbol': 'SOX', 'name': 'PHLX Semiconductor Sector Index',
           'date': market_date, 'close': close, 'changePercent': change_percent,
+          'updatedAt': datetime.now(timezone.utc).isoformat(timespec='seconds'),
           'source': 'Sina Finance SOX index quote'}
 path = Path(__file__).resolve().parents[1] / 'sox.json'
+if path.exists():
+    old = json.loads(path.read_text(encoding='utf-8'))
+    if (old.get('date'), old.get('close'), old.get('changePercent')) == (market_date, close, change_percent):
+        print('SOX quote unchanged')
+        raise SystemExit(0)
 path.write_text(json.dumps(result, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
 print(result)

@@ -3891,6 +3891,8 @@ var usData = {};
 var aData = {};
 var usQuoteDate = '';
 var aQuoteDate = '';
+var aCloseData = {};
+var aCloseDate = '';
 
 const fmtChg = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
 const fmtNum = (n) => n.toFixed(2);
@@ -3933,8 +3935,7 @@ async function fetchUSData() {
       }
     }
   }
-  // SOX is the actual Nasdaq PHLX index, updated after the US close by
-  // GitHub Actions. A stale value must never masquerade as today's move.
+  // SOX is the actual PHLX index. Its quote is refreshed during US trading.
   try {
     const response = await fetch('/sox.json?t=' + Date.now(), {cache:'no-store'});
     if (!response.ok) throw new Error('SOX data unavailable');
@@ -3966,6 +3967,19 @@ async function fetchAData() {
       }
     }
   }
+  try {
+    const response = await fetch('/a-indices.json?t=' + Date.now(), {cache:'no-store'});
+    if (!response.ok) throw new Error('A index close unavailable');
+    const snapshot = await response.json();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(snapshot.date) && snapshot.indices &&
+        (!aQuoteDate || snapshot.date <= aQuoteDate)) {
+      aCloseDate = snapshot.date;
+      for (const idx of INDEX_CONFIG) {
+        const quote = snapshot.indices[idx.aCode];
+        if (quote && Number.isFinite(quote.changePercent)) aCloseData[idx.aCode] = {chg: quote.changePercent};
+      }
+    }
+  } catch (err) { console.warn(err); }
 }
 
 function getSectorChg(sector) {
@@ -3983,23 +3997,24 @@ function render() {
   document.getElementById('sectorGrid').style.display = '';
 
   const usDate = usQuoteDate || '日期待核实';
-  const aDate = aQuoteDate || '日期待核实';
+  const aDate = aCloseDate || aQuoteDate || '日期待核实';
   const bjTime = new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());
-  const aBeforeOpen = aDate === todayStr() && bjTime < '09:30';
+  const aTodayNotClosed = aQuoteDate === todayStr() && bjTime < '15:00';
+  const aIndexData = aCloseDate ? aCloseData : (aTodayNotClosed ? {} : aData);
 
   document.getElementById('subLine').textContent = '美股板块表现与A股主题关联';
-  document.getElementById('datesLine').innerHTML = '<span>美股行情 · ' + usDate + '</span><span>A股' + (aBeforeOpen ? '盘前' : '行情') + ' · ' + aDate + '</span>';
+  document.getElementById('datesLine').innerHTML = '<span>美股行情 · ' + usDate + '</span><span>A股昨日 · ' + aDate + '</span>';
 
   const idxHtml = INDEX_CONFIG.map(idx => {
     const u = usData[idx.usTicker.startsWith('us') ? idx.usTicker.slice(2) : idx.usTicker] || {};
-    const a = aData[idx.aCode] || {};
+    const a = aIndexData[idx.aCode] || {};
     const uChg = Number.isFinite(u.chg) ? u.chg : null;
     const aChg = Number.isFinite(a.chg) ? (Math.abs(a.chg) < 0.005 ? 0 : a.chg) : null;
     const cls = uChg > 0 ? 'up' : uChg < 0 ? 'down' : '';
     const arr = uChg > 0 ? '▲' : uChg < 0 ? '▼' : '—';
     const aCls = aChg > 0 ? 'up' : aChg < 0 ? 'down' : '';
     const aArr = aChg > 0 ? '▲' : aChg < 0 ? '▼' : '—';
-    const aText = aBeforeOpen ? 'A股 待开盘' : aChg === null ? 'A股数据暂缺' : aChg === 0 ? 'A股 — 0.00%' : 'A股 ' + aArr + fmtChg(aChg);
+    const aText = aChg === null ? 'A股昨日 数据暂缺' : aChg === 0 ? 'A股昨日 — 0.00%' : 'A股昨日 ' + aArr + fmtChg(aChg);
     return '<div class="index-card"><div class="pair">' + idx.usName + '<span class="pair-arrow" aria-label="双向映射">↔️</span>' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' / ' + idx.aLabel + '</div><div class="chg ' + cls + '">' + (uChg === null ? '数据暂缺' : arr + ' ' + fmtChg(uChg)) + '</div><div class="a-chg ' + aCls + '">' + aText + '</div></div>';
   }).join('');
   document.getElementById('indexBar').innerHTML = idxHtml;

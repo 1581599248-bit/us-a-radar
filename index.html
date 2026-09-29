@@ -3896,7 +3896,7 @@ const fmtChg = (n) => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
 const fmtNum = (n) => n.toFixed(2);
 const dirIcon = (d) => d === 'up' ? '▲' : d === 'down' ? '▼' : '—';
 
-const todayStr = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const todayStr = () => new Intl.DateTimeFormat('sv-SE', {timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 
 function fetchScript(url) {
@@ -3984,20 +3984,23 @@ function render() {
 
   const usDate = usQuoteDate || '日期待核实';
   const aDate = aQuoteDate || '日期待核实';
+  const bjTime = new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());
+  const aBeforeOpen = aDate === todayStr() && bjTime < '09:30';
 
   document.getElementById('subLine').textContent = '美股板块表现与A股主题关联';
-  document.getElementById('datesLine').innerHTML = '<span>美股行情 · ' + usDate + '</span><span>A股行情 · ' + aDate + '</span>';
+  document.getElementById('datesLine').innerHTML = '<span>美股行情 · ' + usDate + '</span><span>A股' + (aBeforeOpen ? '盘前' : '行情') + ' · ' + aDate + '</span>';
 
   const idxHtml = INDEX_CONFIG.map(idx => {
     const u = usData[idx.usTicker.startsWith('us') ? idx.usTicker.slice(2) : idx.usTicker] || {};
     const a = aData[idx.aCode] || {};
     const uChg = Number.isFinite(u.chg) ? u.chg : null;
-    const aChg = a.chg || 0;
+    const aChg = Number.isFinite(a.chg) ? (Math.abs(a.chg) < 0.005 ? 0 : a.chg) : null;
     const cls = uChg > 0 ? 'up' : uChg < 0 ? 'down' : '';
     const arr = uChg > 0 ? '▲' : uChg < 0 ? '▼' : '—';
     const aCls = aChg > 0 ? 'up' : aChg < 0 ? 'down' : '';
     const aArr = aChg > 0 ? '▲' : aChg < 0 ? '▼' : '—';
-    return '<div class="index-card"><div class="pair">' + idx.usName + '<span class="pair-arrow" aria-label="双向映射">🔄</span>' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' / ' + idx.aLabel + '</div><div class="chg ' + cls + '">' + (uChg === null ? '数据暂缺' : arr + ' ' + fmtChg(uChg)) + '</div><div class="a-chg ' + aCls + '">A股 ' + aArr + fmtChg(aChg) + '</div></div>';
+    const aText = aBeforeOpen ? 'A股 待开盘' : aChg === null ? 'A股数据暂缺' : aChg === 0 ? 'A股 — 0.00%' : 'A股 ' + aArr + fmtChg(aChg);
+    return '<div class="index-card"><div class="pair">' + idx.usName + '<span class="pair-arrow" aria-label="双向映射">🔄</span>' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' / ' + idx.aLabel + '</div><div class="chg ' + cls + '">' + (uChg === null ? '数据暂缺' : arr + ' ' + fmtChg(uChg)) + '</div><div class="a-chg ' + aCls + '">' + aText + '</div></div>';
   }).join('');
   document.getElementById('indexBar').innerHTML = idxHtml;
 
@@ -4087,8 +4090,8 @@ function doExport() {
     logging: false
   }).then(canvas => {
     const link = document.createElement('a');
-    link.download = '美股A股映射雷达_' + todayStr() + '.png';
-    link.href = canvas.toDataURL('image/png');
+    link.download = '美股A股映射雷达_' + todayStr() + '.jpg';
+    link.href = canvas.toDataURL('image/jpeg', 0.96);
     link.click();
     btn.style.display = '';
   }).catch(err => {

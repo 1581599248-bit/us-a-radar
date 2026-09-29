@@ -3997,10 +3997,11 @@ function render() {
   document.getElementById('sectorGrid').style.display = '';
 
   const usDate = usQuoteDate || '日期待核实';
-  const aDate = aCloseDate || aQuoteDate || '日期待核实';
   const bjTime = new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());
   const aTodayNotClosed = aQuoteDate === todayStr() && bjTime < '15:00';
-  const aIndexData = aCloseDate ? aCloseData : (aTodayNotClosed ? {} : aData);
+  const useAClosingSnapshot = aCloseDate && (aCloseDate === aQuoteDate || aTodayNotClosed);
+  const aDate = (useAClosingSnapshot ? aCloseDate : aQuoteDate) || '日期待核实';
+  const aIndexData = useAClosingSnapshot ? aCloseData : (aTodayNotClosed ? {} : aData);
 
   document.getElementById('subLine').textContent = '美股板块表现与A股主题关联';
   document.getElementById('datesLine').innerHTML = '<span>美股行情 · ' + usDate + '</span><span>A股昨日 · ' + aDate + '</span>';

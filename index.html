@@ -17,7 +17,7 @@ body{font-size:8px;line-height:1;color:#1a1a1a;}
 .index-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px 4px;background:#fafafa;border-bottom:1px solid #e0e0e0;}
 .index-card{border:1px solid #e0e0e0;background:#fff;padding:3px 2px;text-align:center;min-width:0;display:grid;grid-template-rows:14px 12px 14px 12px;align-items:center;justify-items:center;}
 .index-card .pair{font-size:8px;font-weight:700;color:#b71c1c;line-height:1;white-space:nowrap;}
-.index-card .pair .pair-arrow{display:inline-block;font-size:10px;line-height:1;vertical-align:-1px;margin:0 2px;}
+.index-card .pair .pair-arrow{display:inline-block;font-size:8px;line-height:1;vertical-align:0;margin:0 2px;}
 .index-card .name{font-size:7px;color:#616161;line-height:1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
 .index-card .chg{font-size:8px;font-weight:700;line-height:1;white-space:nowrap;}
 .index-card .chg.up{color:#c62828;}
@@ -4000,7 +4000,7 @@ function render() {
     const aCls = aChg > 0 ? 'up' : aChg < 0 ? 'down' : '';
     const aArr = aChg > 0 ? '▲' : aChg < 0 ? '▼' : '—';
     const aText = aBeforeOpen ? 'A股 待开盘' : aChg === null ? 'A股数据暂缺' : aChg === 0 ? 'A股 — 0.00%' : 'A股 ' + aArr + fmtChg(aChg);
-    return '<div class="index-card"><div class="pair">' + idx.usName + '<span class="pair-arrow" aria-label="双向映射">🔄</span>' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' / ' + idx.aLabel + '</div><div class="chg ' + cls + '">' + (uChg === null ? '数据暂缺' : arr + ' ' + fmtChg(uChg)) + '</div><div class="a-chg ' + aCls + '">' + aText + '</div></div>';
+    return '<div class="index-card"><div class="pair">' + idx.usName + '<span class="pair-arrow" aria-label="双向映射">↔️</span>' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' / ' + idx.aLabel + '</div><div class="chg ' + cls + '">' + (uChg === null ? '数据暂缺' : arr + ' ' + fmtChg(uChg)) + '</div><div class="a-chg ' + aCls + '">' + aText + '</div></div>';
   }).join('');
   document.getElementById('indexBar').innerHTML = idxHtml;
 

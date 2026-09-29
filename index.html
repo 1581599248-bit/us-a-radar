@@ -15,13 +15,14 @@ body{font-size:8px;line-height:1;color:#1a1a1a;}
 .page-header .time-bar{font-size:8px;margin-top:1px;opacity:0.9;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
 .page-header .time-bar span{background:rgba(255,255,255,0.18);padding:1px 4px;border-radius:1px;}
 .index-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px 4px;background:#fafafa;border-bottom:1px solid #e0e0e0;}
-.index-card{border:1px solid #e0e0e0;background:#fff;padding:2px 2px;text-align:center;}
-.index-card .pair{font-size:8px;font-weight:700;color:#b71c1c;line-height:1.1;}
-.index-card .name{font-size:7px;color:#616161;line-height:1.1;margin-top:1px;}
-.index-card .chg{font-size:8px;font-weight:700;line-height:1.1;margin-top:1px;}
+.index-card{border:1px solid #e0e0e0;background:#fff;padding:3px 2px;text-align:center;min-width:0;display:grid;grid-template-rows:14px 12px 14px 12px;align-items:center;justify-items:center;}
+.index-card .pair{font-size:8px;font-weight:700;color:#b71c1c;line-height:1;white-space:nowrap;}
+.index-card .pair .pair-arrow{display:inline-block;font-size:10px;line-height:1;vertical-align:-1px;margin:0 2px;}
+.index-card .name{font-size:7px;color:#616161;line-height:1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+.index-card .chg{font-size:8px;font-weight:700;line-height:1;white-space:nowrap;}
 .index-card .chg.up{color:#c62828;}
 .index-card .chg.down{color:#2e7d32;}
-.index-card .a-chg{font-size:7px;color:#757575;line-height:1.1;margin-top:1px;}
+.index-card .a-chg{font-size:7px;color:#757575;line-height:1;white-space:nowrap;}
 .summary-strip{display:flex;gap:2px;padding:2px 4px;background:#fff;border-bottom:1px solid #e0e0e0;font-size:8px;justify-content:center;flex-wrap:wrap;}
 .summary-strip .chip{padding:1px 3px;border:1px solid #ddd;background:#fff;white-space:nowrap;border-radius:1px;}
 .summary-strip .chip.up{color:#c62828;border-color:#ffcdd2;background:#ffebee;}
@@ -3996,7 +3997,7 @@ function render() {
     const arr = uChg > 0 ? '▲' : uChg < 0 ? '▼' : '—';
     const aCls = aChg > 0 ? 'up' : aChg < 0 ? 'down' : '';
     const aArr = aChg > 0 ? '▲' : aChg < 0 ? '▼' : '—';
-    return '<div class="index-card"><div class="pair">' + idx.usName + ' ↔ ' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' vs A股' + idx.aLabel + '</div><div class="chg ' + cls + '">' + (uChg === null ? '数据暂缺' : arr + ' ' + fmtChg(uChg)) + '</div><div class="a-chg ' + aCls + '">A股 ' + aArr + fmtChg(aChg) + '</div></div>';
+    return '<div class="index-card"><div class="pair">' + idx.usName + '<span class="pair-arrow" aria-label="双向映射">🔄</span>' + idx.aLabel + '</div><div class="name">' + idx.usLabel + ' / ' + idx.aLabel + '</div><div class="chg ' + cls + '">' + (uChg === null ? '数据暂缺' : arr + ' ' + fmtChg(uChg)) + '</div><div class="a-chg ' + aCls + '">A股 ' + aArr + fmtChg(aChg) + '</div></div>';
   }).join('');
   document.getElementById('indexBar').innerHTML = idxHtml;
 

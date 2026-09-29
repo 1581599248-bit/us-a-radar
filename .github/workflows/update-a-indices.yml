@@ -1,0 +1,30 @@
+name: Update A-share index close
+on:
+  schedule:
+    # 16:15 and 17:00 Beijing time, after the mainland market has closed.
+    - cron: '15 8 * * 1-5'
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: update-a-indices
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python scripts/update_a_indices.py
+      - name: Commit changed close
+        run: |
+          if git diff --quiet -- a-indices.json; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add a-indices.json
+          git commit -m 'Update A-share index close'
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push

@@ -6,30 +6,42 @@ on:
       - '.github/workflows/update-sox.yml'
       - 'scripts/update_sox.py'
   schedule:
-    # Every five minutes across US summer and winter trading hours.
-    - cron: '*/5 13-23 * * 1-5'
-    - cron: '*/5 0-2 * * 2-6'
+    # Keep an active updater during US trading; cron alone can be delayed.
+    - cron: '7,37 13-21 * * 1-5'
   workflow_dispatch:
 permissions:
   contents: write
 concurrency:
   group: update-sox
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python scripts/update_sox.py
-      - name: Commit changed quote
+      - name: Refresh SOX throughout the trading session
         run: |
-          if git diff --quiet -- sox.json; then exit 0; fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add sox.json
-          git commit -m 'Update SOX index quote'
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push
+          deadline=$((SECONDS + 19800))
+          while true; do
+            if python scripts/update_sox.py; then
+              if ! git diff --quiet -- sox.json; then
+                git config user.name 'github-actions[bot]'
+                git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+                git add sox.json
+                git commit -m 'Update SOX index quote'
+                git pull --rebase origin "${GITHUB_REF_NAME}"
+                git push
+              fi
+            else
+              echo 'SOX source failed; keeping the last valid quote and retrying.'
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then break; fi
+            if ! python -c 'from datetime import datetime; from zoneinfo import ZoneInfo; d=datetime.now(ZoneInfo("America/New_York")); m=d.hour*60+d.minute; raise SystemExit(0 if d.weekday()<5 and 565<=m<975 else 1)'; then
+              break
+            fi
+            sleep 60
+          done

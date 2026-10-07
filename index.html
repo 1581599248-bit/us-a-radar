@@ -3935,15 +3935,25 @@ async function fetchUSData() {
       }
     }
   }
-  // SOX is the actual PHLX index. Its quote is refreshed during US trading.
-  try {
-    const response = await fetch('/sox.json?t=' + Date.now(), {cache:'no-store'});
-    if (!response.ok) throw new Error('SOX data unavailable');
-    const sox = await response.json();
-    if (sox.symbol === 'SOX' && sox.date === usQuoteDate && Number.isFinite(sox.changePercent)) {
+  // Read the latest SOX quote directly; static hosting may deploy behind Actions.
+  delete usData.SOX;
+  for (const source of [
+    'https://raw.githubusercontent.com/1581599248-bit/us-a-radar/main/sox.json',
+    '/sox.json'
+  ]) {
+    try {
+      const response = await fetch(source + '?t=' + Date.now(), {
+        cache: 'no-store', signal: AbortSignal.timeout(8000)
+      });
+      if (!response.ok) throw new Error('SOX data unavailable');
+      const sox = await response.json();
+      if (sox.symbol !== 'SOX' || sox.date !== usQuoteDate ||
+          !Number.isFinite(sox.close) || sox.close <= 0 ||
+          !Number.isFinite(sox.changePercent)) continue;
       usData.SOX = {price: sox.close, chg: sox.changePercent};
-    } else delete usData.SOX;
-  } catch (err) { delete usData.SOX; console.warn(err); }
+      break;
+    } catch (err) { console.warn('SOX quote refresh failed', err); }
+  }
 }
 
 async function fetchAData() {
